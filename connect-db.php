@@ -1,12 +1,18 @@
 <?php
 $config = require 'config.php';
 
-$host = $config['DB_HOST']; 
+$localhost = $config['LOCAL_IP_HOST']; 
+$cloudhost = $config['CLOUD_SQL_HOST']; 
 $dbname = $config['DB_NAME'];
 $username = $config['DB_USER'];
 $password = $config['DB_PASS'];
+$isAppEngine = getenv('GAE_ENV') === 'standard';
 
-$dsn = "mysql:host=$host;dbname=$dbname";
+if ($isAppEngine) {
+    $dsn = "mysql:unix_socket=/cloudsql/$cloudhost;dbname=$dbname"; //run on gcp cloud app engine
+} else { 
+    $dsn = "mysql:host=$localhost;dbnamze=$dbname"; //run locally
+}
 
 /** connect to the database **/
 try 
