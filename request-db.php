@@ -63,15 +63,50 @@ function createUser($firstname, $lastname, $computingid, $email, $year, $dob, $s
         $statement->bindValue(':password', $password);
         $statement->execute();
         $statement->closeCursor(); 
-        return true;
-    }
-    catch (PDOException $e) {
-        echo $e->getMessage();
-        return false;
     }
     catch (Exception $e) {
-        echo $e->getMessage();
-        return false;
+        throw $e; 
+    }
+}
+
+function addPhoneNumber($computing_ID, $phone_number) 
+{
+    global $db;
+    $query = "INSERT INTO student_phone (computing_ID, phone_number) VALUES (:computing_ID, :phone_number)";
+    try {
+        $statement = $db->prepare($query); //prevent sql injection
+        $statement->bindValue(':computing_ID', $computing_ID);
+        $statement->bindValue(':phone_number', $phone_number);
+        $statement->execute();
+        $statement->closeCursor(); 
+    }
+    catch (Exception $e) {
+        throw $e; 
+    }
+}
+
+//used for inserting multiple phone numbers / major / minors for a specific student baed on their computing ID
+function insertMultiple($table, $computingID, $columnName, $values) {
+    global $db;
+
+    $valueString = "";
+    for($i=0;$i<count($values);$i++)
+        $valueString .= "(:computing_ID, :value{$i}),";
+    $valueString = rtrim($valueString, ','); //remove extra comma at the end
+
+    //don't have to prevent sql injection via binding for column name + table since those values are set internally (see create_account.php)
+    $query = "INSERT INTO $table (computing_ID, $columnName) VALUES {$valueString}";
+
+    try {
+        $statement = $db->prepare($query); //prevent sql injection
+        $statement->bindValue(':computing_ID', $computingID);
+        for($i=0;$i<count($values);$i++)
+            $statement->bindValue(":value{$i}", $values[$i]);
+        $statement->execute();
+        $statement->closeCursor(); 
+    }
+    catch (Exception $e) {
+        throw $e; 
     }
 }
 

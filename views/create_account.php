@@ -13,9 +13,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
     {
       if(isUniqueComputingID($_POST['computingid']))
       {
-        createUser($_POST['firstname'], $_POST['lastname'], $_POST['computingid'], $_POST['email'], $_POST['year'], $_POST['dob'], $_POST['street'], $_POST['city'], $_POST['state'], $_POST['zipcode'], $_POST['password']);
-        header("Location: index.php?page=home");
-        exit();
+        try {
+          createUser($_POST['firstname'], $_POST['lastname'], $_POST['computingid'], $_POST['email'], $_POST['year'], $_POST['dob'], $_POST['street'], $_POST['city'], $_POST['state'], $_POST['zipcode'], $_POST['password']);
+          insertMultiple('student_phone', $_POST['computingid'], 'phone_number', $_POST['phonenumbers']);
+          insertMultiple('student_minor', $_POST['computingid'], 'minor_name', $_POST['minors']);
+          insertMultiple('student_major', $_POST['computingid'], 'major_name', $_POST['majors']);
+          header("Location: index.php?page=home");
+          exit();
+        }
+        catch (Exception $e) 
+        {
+          $errorMessage = "Unable to create account, error was: " . $e->getMessage();
+        }
       }
       else 
         $errorMessage = "An account with the provided computing ID already exists.";
@@ -29,7 +38,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
 
 <!DOCTYPE html>
 <html>
-
   <?php require("base.php"); ?>
 
   <?php 
@@ -59,7 +67,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
             <label for="email" class="form-label">Email*</label>
             <input type="text" name="email" id="email" class="form-control" required>
           </div>
+          <div id="phoneContainer">
+              <div class="form-group">
+                  <label for="phonenumber1">Phone Number</label>
+                  <input type="text" class="form-control" id="phonenumber1" name="phonenumbers[]">
+              </div>
+          </div>
+          <button type="button" class="btn btn-light btn-sm"  style="margin-top: 5px;" id="addPhone">+ Add Phone Number</button>
           <div class="mb-3">
+            <br>
             <label class="form-label">Year*</label>
             <div class="form-check">
                 <input class="form-check-input" type="radio" name="year" id="year1" value="1" checked>
@@ -78,11 +94,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
                 <label class="form-check-label" for="year4">4</label>
             </div>
         </div>
+          <div id="majorContainer">
+              <div class="form-group">
+                  <label for="major1">Major</label>
+                  <input type="text" class="form-control" id="major1" name="majors[]">
+              </div>
+          </div>
+          <button type="button" class="btn btn-light btn-sm"  style="margin-top: 5px;" id="addMajor">+ Add Major</button>
+          <div id="minorContainer">
+              <br>
+              <div class="form-group">
+                  <label for="minor1">Minor</label>
+                  <input type="text" class="form-control" id="minor1" name="minors[]">
+              </div>
+          </div>
+          <button type="button" class="btn btn-light btn-sm" style="margin-top: 5px; margin-bottom: 20px;" id="addMinor">+ Add Minor</button>
             
           <div class="mb-3">
             <label for="dob" class="form-label">Date of Birth*</label>
             <input type="date" name="dob" id="dob" class="form-control" required>
+            <br>
           </div>
+          <div class="mb-3"> <p> <u> Address: </u> </p> <div>
           <div class="mb-3">
             <label for="street" class="form-label">Street*</label>
             <input type="text" name="street" id="street" class="form-control" required>
@@ -98,6 +131,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
           <div class="mb-3">
             <label for="zipcode" class="form-label">Zip Code*</label>
             <input type="text" name="zipcode" id="zipcode" class="form-control" required>
+            <br>
           </div>
           <div class="mb-3">
             <label for="password" class="form-label">Password*</label>
@@ -112,6 +146,47 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
 
     <?php // include('footer.html') ?> 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+    <script>
+      $(document).ready(function() {
+          let phoneCount = 1;
+          let majorCount = 1;
+          let minorCount = 1;
+
+          $('#addPhone').click(function() {
+              phoneCount++;
+              const html = `
+                  <div class="form-group mt-2">
+                      <label for="phonenumber${phoneCount}">Phone Number ${phoneCount}</label>
+                      <input type="text" class="form-control" id="phonenumber${phoneCount}" name="phonenumbers[]">
+                  </div>
+              `;
+              $('#phoneContainer').append(html);
+          });
+
+          $('#addMajor').click(function() {
+              majorCount++;
+              const html = `
+                  <div class="form-group mt-2">
+                      <label for="major${majorCount}">Major ${majorCount}</label>
+                      <input type="text" class="form-control" id="major${majorCount}" name="majors[]">
+                  </div>
+              `;
+              $('#majorContainer').append(html);
+          });
+
+          $('#addMinor').click(function() {
+              minorCount++;
+              const html = `
+                  <div class="form-group mt-2">
+                      <label for="minor${minorCount}">Minor ${minorCount}</label>
+                      <input type="text" class="form-control" id="minor${minorCount}" name="minors[]">
+                  </div>
+              `;
+              $('#minorContainer').append(html);
+          });
+      });
+      </script>
+
   </body>
 
   
