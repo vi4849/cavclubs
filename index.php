@@ -15,6 +15,15 @@ switch ($page) {
     case 'update_profile':
         include('views/update_profile.php');
         break;
+    case 'create_event':
+        include('views/create_event.php');
+        break;
+    case 'browse_events':
+        include('views/browse_events.php');
+        break;
+    case 'delete_user':
+        include('views/delete_user.php');
+        break;
     default:
         echo "404 - Page not found";
         break;
