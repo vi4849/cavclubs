@@ -110,6 +110,49 @@ function insertMultiple($table, $computingID, $columnName, $values) {
     }
 }
 
+function getAllCIONames() 
+{
+    global $db;
+    $query = "SELECT cio_id, cio_name FROM cio";
+    $statement = $db->prepare($query); //prepare takes the query + compiles it
+    $statement->execute(); //runs the query against the database / table
+    $result = $statement->fetchAll(PDO::FETCH_ASSOC); // only returns an array with (cio_id, cio_name)
+    $statement->closeCursor();
+    return $result;
+}
+
+function addCIOExecutive($computing_ID, $cio_id) {
+    global $db;
+    $curr_year = date('Y');
+    $role = "President";
+
+    //set default start and end dates to be 8/20 (so all term lengths are 1 year long)
+    if (date('m') < 6) {
+        $start_term = ($curr_year-1) . "-08-20"; 
+        $end_term = ($curr_year) . "-08-20"; 
+    }
+    else {
+        $start_term = ($curr_year) . "-08-20"; 
+        $end_term = ($curr_year+1) . "-08-20"; 
+    }
+    
+
+    $query = "INSERT INTO cio_executive (computing_ID, cio_id, start_term, end_term, role) VALUES (:computing_ID, :cio_id, :start_term, :end_term, :role)";
+    try {
+        $statement = $db->prepare($query); //prevent sql injection
+        $statement->bindValue(':computing_ID', $computing_ID);
+        $statement->bindValue(':cio_id', $cio_id);
+        $statement->bindValue(':start_term', $start_term);
+        $statement->bindValue(':end_term', $end_term);
+        $statement->bindValue(':role', $role);
+        $statement->execute();
+        $statement->closeCursor(); 
+    }
+    catch (Exception $e) {
+        throw $e; 
+    }
+}
+
 function getUserByComputingID($computingID) {
   global $db;
   $query = "SELECT * FROM student WHERE computing_ID = :computingID";

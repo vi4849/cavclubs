@@ -4,6 +4,7 @@
 
 <?php
 $errorMessage = null;
+$list_of_cios = getAllCIONames();
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST')
 {
@@ -15,9 +16,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
       {
         try {
           createUser($_POST['firstname'], $_POST['lastname'], $_POST['computingid'], $_POST['email'], $_POST['year'], $_POST['dob'], $_POST['street'], $_POST['city'], $_POST['state'], $_POST['zipcode'], $_POST['password']);
-          insertMultiple('student_phone', $_POST['computingid'], 'phone_number', $_POST['phonenumbers']);
-          insertMultiple('student_minor', $_POST['computingid'], 'minor_name', $_POST['minors']);
-          insertMultiple('student_major', $_POST['computingid'], 'major_name', $_POST['majors']);
+          if(!empty($_POST['phonenumbers']))
+            insertMultiple('student_phone', $_POST['computingid'], 'phone_number', $_POST['phonenumbers']);
+          if(!empty($_POST['minors']))
+            insertMultiple('student_minor', $_POST['computingid'], 'minor_name', $_POST['minors']);
+          if(!empty($_POST['majors']))
+            insertMultiple('student_major', $_POST['computingid'], 'major_name', $_POST['majors']);
+          foreach ($_POST['cios'] as $cioID) 
+            addCIOExecutive($_POST['computingid'], $cioID);
           header("Location: index.php?page=home");
           exit();
         }
@@ -51,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
       <div class="large-form-box">
         <h1>Create an account</h1>
         <form method="post" action="">
-          <div class="mb-3">
+         <div class="mb-3">
             <label for="firstname" class="form-label">First Name*</label>
             <input type="text" name="firstname" id="firstname" class="form-control" required>
           </div>
@@ -93,7 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
                 <input class="form-check-input" type="radio" name="year" id="year4" value="4">
                 <label class="form-check-label" for="year4">4</label>
             </div>
-        </div>
+          </div>
           <div id="majorContainer">
               <div class="form-group">
                   <label for="major1">Major</label>
@@ -131,7 +137,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
           <div class="mb-3">
             <label for="zipcode" class="form-label">Zip Code*</label>
             <input type="text" name="zipcode" id="zipcode" class="form-control" required>
-            <br>
+          </div> 
+          <div class="mb-3">
+            <br> 
+            <label class="form-label">Are you an executive member of any CIOs?*</label>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="cio_exec" id="cio_exec_yes" value="yes">
+                <label class="form-check-label" for="cio_exec_yes">Yes</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="cio_exec" id="cio_exec_no" value="no" checked>
+                <label class="form-check-label" for="cio_exec_no">No</label>
+            </div>
+            <div id="cioContainer">
+              <br>
+              <p> <u> Select the CIOs you are an executive member of: </u> </p>
+              <select class="form-select" name="cios[]" id="cios" multiple aria-label="multiple select example">
+              </select>
+            </div>
           </div>
           <div class="mb-3">
             <label for="password" class="form-label">Password*</label>
@@ -147,10 +170,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
     <?php // include('footer.html') ?> 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
     <script>
+      const list_of_cios = <?php echo json_encode($list_of_cios); ?>; //convert php array into a javascript array (format: [{cio_id: 1, cio_name: "GWC", etc.}] )
       $(document).ready(function() {
           let phoneCount = 1;
           let majorCount = 1;
           let minorCount = 1;
+
+          if ($('#cio_exec_no').is(':checked')) {
+              $('#cioContainer').hide();
+          }
+
+          $('input[name="cio_exec"]').change(function() {
+              if ($(this).val() === 'yes') {
+                  $.each(list_of_cios, function(index, cio) {
+                      const html = `<option value="${cio.cio_id}">${cio.cio_name}</option>`;
+                      $('#cios').append(html);
+                  });
+                  $('#cioContainer').slideDown();
+              }
+              else {
+                  $('#cioContainer').slideUp();
+              }
+          });
+
 
           $('#addPhone').click(function() {
               phoneCount++;
