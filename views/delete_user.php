@@ -1,29 +1,25 @@
 <?php
-include 'connect-db.php'; 
+include 'connect-db.php'; // uses $db (PDO connection)
 
-// If form submitted:
+$message = '';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user_id = $_POST['user_id'] ?? null;
 
     if (!$user_id) {
         $message = "Missing user ID.";
     } else {
-        $stmt = $conn->prepare("DELETE FROM users WHERE id = ?");
-        $stmt->bind_param("i", $user_id);
-
-        if ($stmt->execute()) {
+        try {
+            $stmt = $db->prepare("DELETE FROM users WHERE id = :id");
+            $stmt->execute([':id' => $user_id]);
             $message = "User deleted successfully.";
-        } else {
-            $message = "Failed to delete user.";
+        } catch (PDOException $e) {
+            $message = "Error deleting user: " . htmlspecialchars($e->getMessage());
         }
-
-        $stmt->close();
-        $conn->close();
     }
 }
 ?>
 
-<!-- Frontend UI -->
 <h2>Delete User</h2>
 
 <?php if (!empty($message)): ?>
