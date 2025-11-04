@@ -110,4 +110,35 @@ function insertMultiple($table, $computingID, $columnName, $values) {
     }
 }
 
+function getUserByComputingID($computingID) {
+  global $db;
+  $query = "SELECT * FROM student WHERE computing_ID = :computingID";
+  $statement = $db->prepare($query);
+  $statement->bindValue(':computingID', $computingID);
+  $statement->execute();
+  $result = $statement->fetch(PDO::FETCH_ASSOC);
+  $statement->closeCursor();
+  return $result;
+}
+
+function updateUserProfile($computingID, $first, $last, $email, $year, $city, $state, $zip) {
+  global $db;
+  $query = "UPDATE student
+            SET first_name = :first, last_name = :last, email = :email, year = :year,
+                city_address = :city, state_address = :state, zipcode_address = :zip
+            WHERE computing_ID = :computingID";
+  $statement = $db->prepare($query);
+  $statement->bindValue(':computingID', $computingID);
+  $statement->bindValue(':first', $first);
+  $statement->bindValue(':last', $last);
+  $statement->bindValue(':email', $email);
+  $statement->bindValue(':year', $year);
+  $statement->bindValue(':city', $city);
+  $statement->bindValue(':state', $state);
+  $statement->bindValue(':zip', $zip);
+  $statement->execute();
+  $statement->closeCursor();
+}
+
+
 ?>

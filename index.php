@@ -12,6 +12,9 @@ switch ($page) {
     case 'create_account':
         include('views/create_account.php');
         break;
+    case 'update_profile':
+        include('views/update_profile.php');
+        break;
     default:
         echo "404 - Page not found";
         break;

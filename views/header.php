@@ -18,6 +18,9 @@
           <?php if (!isset($_SESSION['username'])) { ?>              
             <li class="nav-item">
               <a class="nav-link" href="signin.php">Login</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="index.php?page=update_profile">Profile</a>
             </li>              
           <?php  } else { ?>                    
             <li class="nav-item">                  
