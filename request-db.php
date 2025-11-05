@@ -194,7 +194,7 @@ function deleteUser($computingID) {
 
 function createEvent($eventName, $description, $location, $date, $time) {
     global $db;
-    $query = "INSERT INTO events (event_name, description, location, event_date, event_time)
+    $query = "INSERT INTO event (event_name, description, location, event_date, event_time)
               VALUES (:eventName, :description, :location, :eventDate, :eventTime)";
     $statement = $db->prepare($query);
     $statement->bindValue(':eventName', $eventName);
@@ -208,7 +208,7 @@ function createEvent($eventName, $description, $location, $date, $time) {
 
 function getAllEvents() {
     global $db;
-    $query = "SELECT * FROM events ORDER BY event_date DESC";
+    $query = "SELECT * FROM event ORDER BY event_date DESC";
     $statement = $db->prepare($query);
     $statement->execute();
     $results = $statement->fetchAll(PDO::FETCH_ASSOC);
