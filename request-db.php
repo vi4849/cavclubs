@@ -1,17 +1,21 @@
 <?php
-function checkIfUserExists($computingID, $password) 
-{
+function checkIfUserExists($computingID, $password) {
     global $db;
-    $query = "SELECT * FROM student WHERE computing_ID=:computingID AND password=:password";
+    $query = "SELECT * FROM student WHERE computing_ID = :computingID";
     $statement = $db->prepare($query);
     $statement->bindValue(':computingID', $computingID);
-    $statement->bindValue(':password', $password);
     $statement->execute(); 
-    $result = $statement -> fetchAll();
+    $user = $statement->fetch(PDO::FETCH_ASSOC);
     $statement->closeCursor();
 
-    return $result;
+    //adjust on hashing changes
+    if ($user && password_verify($password, $user['password'])) {
+        return $user; // valid credentials
+    } else {
+        return false; // invalid credentials
+    }
 }
+
 
 function isUniqueEmail($email) 
 {
@@ -47,6 +51,7 @@ function isUniqueComputingID($computingID)
 function createUser($firstname, $lastname, $computingid, $email, $year, $dob, $street, $city, $state, $zipcode, $password) 
 {
     global $db;
+    $hashed = password_hash($password, PASSWORD_DEFAULT); //hash the password before storing in db - application security implementation
     $query = "INSERT INTO student (computing_ID, year, email, DOB, first_name, last_name, street_address, city_address, state_address, zipcode_address, password) VALUES (:computing_ID, :year, :email, :DOB, :first_name, :last_name, :street_address, :city_address, :state_address, :zipcode_address, :password)";
     try {
         $statement = $db->prepare($query); //prevent sql injection
