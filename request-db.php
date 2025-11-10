@@ -65,7 +65,7 @@ function createUser($firstname, $lastname, $computingid, $email, $year, $dob, $s
         $statement->bindValue(':city_address', $city);
         $statement->bindValue(':state_address', $state);
         $statement->bindValue(':zipcode_address', $zipcode);
-        $statement->bindValue(':password', $password);
+        $statement->bindValue(':password', $hashed);
         $statement->execute();
         $statement->closeCursor(); 
     }
