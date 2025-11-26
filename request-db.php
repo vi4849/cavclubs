@@ -230,13 +230,93 @@ function createEvent($title, $description, $month_date, $day_date, $year_date, $
     $statement->closeCursor();
 }
 
-function getAllEvents()
-{
+// function getAllEvents()
+// {
+//     global $db;
+//     $query = "SELECT * FROM event ORDER BY event_date DESC";
+//     $statement = $db->prepare($query);
+//     $statement->execute();
+//     $results = $statement->fetchAll(PDO::FETCH_ASSOC);
+//     $statement->closeCursor();
+//     return $results;
+// }
+
+function getEvents() {
     global $db;
-    $query = "SELECT * FROM event ORDER BY event_date DESC";
-    $statement = $db->prepare($query);
-    $statement->execute();
-    $results = $statement->fetchAll(PDO::FETCH_ASSOC);
-    $statement->closeCursor();
-    return $results;
+
+    $query = "
+        SELECT e.*, c.cio_name, v.building_location, v.room_location, cat.category_name
+        FROM event e
+        JOIN cio c ON e.cio_id = c.cio_id
+        JOIN venue v ON e.venue_id = v.venue_id
+        LEFT JOIN part_of p ON c.cio_id = p.cio_id
+        LEFT JOIN category cat ON p.category_id = cat.category_id
+        ORDER BY e.year_date DESC, e.month_date DESC, e.day_date DESC
+    ";
+
+    $stmt = $db->prepare($query);
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function searchEvents($keyword = '', $category = '', $date = '') {
+    global $db;
+
+    $query = "
+        SELECT DISTINCT e.*, 
+                        c.cio_name, 
+                        v.building_location, 
+                        v.room_location,
+                        cat.category_name
+        FROM event e
+        JOIN cio c ON e.cio_id = c.cio_id
+        JOIN venue v ON e.venue_id = v.venue_id
+        LEFT JOIN part_of p ON c.cio_id = p.cio_id
+        LEFT JOIN category cat ON p.category_id = cat.category_id
+        WHERE 1=1
+    ";
+
+    $params = [];
+
+    if (!empty($keyword)) {
+        $query .= "
+            AND (
+                e.title LIKE :kw
+                OR e.description LIKE :kw
+                OR c.cio_name LIKE :kw
+            )
+        ";
+        $params[':kw'] = '%' . $keyword . '%';
+    }
+
+    if (!empty($category)) {
+        $query .= " AND cat.category_name = :category";
+        $params[':category'] = $category;
+    }
+
+    if (!empty($date)) {
+        $dt = DateTime::createFromFormat('Y-m-d', $date);
+        if ($dt) {
+            $query .= "
+                AND e.year_date  = :yr
+                AND e.month_date = :mo
+                AND e.day_date   = :dy
+            ";
+            $params[':yr'] = (int)$dt->format('Y');
+            $params[':mo'] = (int)$dt->format('n');
+            $params[':dy'] = (int)$dt->format('j');
+        }
+    }
+
+    $query .= " ORDER BY e.year_date DESC, e.month_date DESC, e.day_date DESC";
+
+    $stmt = $db->prepare($query);
+
+    foreach ($params as $key => $value) 
+    {
+        $stmt->bindValue($key, $value);
+    }
+
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
