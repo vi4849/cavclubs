@@ -1,57 +1,67 @@
 <?php
-function checkIfUserExists($computingID, $password) {
+function checkIfUserExists($computingID, $password)
+{
     global $db;
     $query = "SELECT * FROM student WHERE computing_ID = :computingID";
     $statement = $db->prepare($query);
     $statement->bindValue(':computingID', $computingID);
-    $statement->execute(); 
+    $statement->execute();
     $user = $statement->fetch(PDO::FETCH_ASSOC);
     $statement->closeCursor();
 
     //adjust on hashing changes
+    // If password_verify fails, write a small diagnostic to the error log so we can
+    // inspect whether the stored value looks like a hash (prefix char and length)
     if ($user && password_verify($password, $user['password'])) {
         return $user; // valid credentials
     } else {
+        if ($user) {
+            $stored = $user['password'];
+            $startsWithDollar = (strlen($stored) > 0 && $stored[0] === '$') ? 'yes' : 'no';
+            $len = strlen($stored);
+            error_log("[CavClubs] Password verify failed for {$computingID}. stored_password_starts_with_\"$\": {$startsWithDollar}; length={$len}");
+        }
         return false; // invalid credentials
     }
 }
 
 
-function isUniqueEmail($email) 
+function isUniqueEmail($email)
 {
     global $db;
     $query = "SELECT 1 FROM student WHERE email = :email LIMIT 1";
     $statement = $db->prepare($query);
     $statement->bindValue(':email', $email);
     $statement->execute();
-    
+
     $row = $statement->fetch(); // fetch 1 row, returns false if no row is fetched
     $statement->closeCursor();
 
-    if ($row==false) return true;
+    if ($row == false) return true;
     else return false;
 }
 
 
-function isUniqueComputingID($computingID) 
+function isUniqueComputingID($computingID)
 {
     global $db;
     $query = "SELECT 1 FROM student WHERE computing_ID = :computingID LIMIT 1";
     $statement = $db->prepare($query);
     $statement->bindValue(':computingID', $computingID);
     $statement->execute();
-    
+
     $row = $statement->fetch(); // fetch 1 row, returns false if no row is fetched
     $statement->closeCursor();
 
-    if ($row==false) return true; //if no row is returned, then the computing ID is a new / unique one
+    if ($row == false) return true; //if no row is returned, then the computing ID is a new / unique one
     else return false;
 }
 
-function createUser($firstname, $lastname, $computingid, $email, $year, $dob, $street, $city, $state, $zipcode, $password) 
+function createUser($firstname, $lastname, $computingid, $email, $year, $dob, $street, $city, $state, $zipcode, $password)
 {
     global $db;
-    $hashed = password_hash($password, PASSWORD_DEFAULT); //hash the password before storing in db - application security implementation
+    // Hash the password before storing in db - application security implementation
+    $hashed = password_hash($password, PASSWORD_DEFAULT);
     $query = "INSERT INTO student (computing_ID, year, email, DOB, first_name, last_name, street_address, city_address, state_address, zipcode_address, password) VALUES (:computing_ID, :year, :email, :DOB, :first_name, :last_name, :street_address, :city_address, :state_address, :zipcode_address, :password)";
     try {
         $statement = $db->prepare($query); //prevent sql injection
@@ -67,14 +77,13 @@ function createUser($firstname, $lastname, $computingid, $email, $year, $dob, $s
         $statement->bindValue(':zipcode_address', $zipcode);
         $statement->bindValue(':password', $hashed);
         $statement->execute();
-        $statement->closeCursor(); 
-    }
-    catch (Exception $e) {
-        throw $e; 
+        $statement->closeCursor();
+    } catch (Exception $e) {
+        throw $e;
     }
 }
 
-function addPhoneNumber($computing_ID, $phone_number) 
+function addPhoneNumber($computing_ID, $phone_number)
 {
     global $db;
     $query = "INSERT INTO student_phone (computing_ID, phone_number) VALUES (:computing_ID, :phone_number)";
@@ -83,19 +92,19 @@ function addPhoneNumber($computing_ID, $phone_number)
         $statement->bindValue(':computing_ID', $computing_ID);
         $statement->bindValue(':phone_number', $phone_number);
         $statement->execute();
-        $statement->closeCursor(); 
-    }
-    catch (Exception $e) {
-        throw $e; 
+        $statement->closeCursor();
+    } catch (Exception $e) {
+        throw $e;
     }
 }
 
 //used for inserting multiple phone numbers / major / minors for a specific student baed on their computing ID
-function insertMultiple($table, $computingID, $columnName, $values) {
+function insertMultiple($table, $computingID, $columnName, $values)
+{
     global $db;
 
     $valueString = "";
-    for($i=0;$i<count($values);$i++)
+    for ($i = 0; $i < count($values); $i++)
         $valueString .= "(:computing_ID, :value{$i}),";
     $valueString = rtrim($valueString, ','); //remove extra comma at the end
 
@@ -105,17 +114,16 @@ function insertMultiple($table, $computingID, $columnName, $values) {
     try {
         $statement = $db->prepare($query); //prevent sql injection
         $statement->bindValue(':computing_ID', $computingID);
-        for($i=0;$i<count($values);$i++)
+        for ($i = 0; $i < count($values); $i++)
             $statement->bindValue(":value{$i}", $values[$i]);
         $statement->execute();
-        $statement->closeCursor(); 
-    }
-    catch (Exception $e) {
-        throw $e; 
+        $statement->closeCursor();
+    } catch (Exception $e) {
+        throw $e;
     }
 }
 
-function getAllCIONames() 
+function getAllCIONames()
 {
     global $db;
     $query = "SELECT cio_id, cio_name FROM cio";
@@ -126,21 +134,21 @@ function getAllCIONames()
     return $result;
 }
 
-function addCIOExecutive($computing_ID, $cio_id) {
+function addCIOExecutive($computing_ID, $cio_id)
+{
     global $db;
     $curr_year = date('Y');
     $role = "President";
 
     //set default start and end dates to be 8/20 (so all term lengths are 1 year long)
     if (date('m') < 6) {
-        $start_term = ($curr_year-1) . "-08-20"; 
-        $end_term = ($curr_year) . "-08-20"; 
+        $start_term = ($curr_year - 1) . "-08-20";
+        $end_term = ($curr_year) . "-08-20";
+    } else {
+        $start_term = ($curr_year) . "-08-20";
+        $end_term = ($curr_year + 1) . "-08-20";
     }
-    else {
-        $start_term = ($curr_year) . "-08-20"; 
-        $end_term = ($curr_year+1) . "-08-20"; 
-    }
-    
+
 
     $query = "INSERT INTO cio_executive (computing_ID, cio_id, start_term, end_term, role) VALUES (:computing_ID, :cio_id, :start_term, :end_term, :role)";
     try {
@@ -151,44 +159,46 @@ function addCIOExecutive($computing_ID, $cio_id) {
         $statement->bindValue(':end_term', $end_term);
         $statement->bindValue(':role', $role);
         $statement->execute();
-        $statement->closeCursor(); 
-    }
-    catch (Exception $e) {
-        throw $e; 
+        $statement->closeCursor();
+    } catch (Exception $e) {
+        throw $e;
     }
 }
 
-function getUserByComputingID($computingID) {
-  global $db;
-  $query = "SELECT * FROM student WHERE computing_ID = :computingID";
-  $statement = $db->prepare($query);
-  $statement->bindValue(':computingID', $computingID);
-  $statement->execute();
-  $result = $statement->fetch(PDO::FETCH_ASSOC);
-  $statement->closeCursor();
-  return $result;
+function getUserByComputingID($computingID)
+{
+    global $db;
+    $query = "SELECT * FROM student WHERE computing_ID = :computingID";
+    $statement = $db->prepare($query);
+    $statement->bindValue(':computingID', $computingID);
+    $statement->execute();
+    $result = $statement->fetch(PDO::FETCH_ASSOC);
+    $statement->closeCursor();
+    return $result;
 }
 
-function updateUserProfile($computingID, $first, $last, $email, $year, $city, $state, $zip) {
-  global $db;
-  $query = "UPDATE student
+function updateUserProfile($computingID, $first, $last, $email, $year, $city, $state, $zip)
+{
+    global $db;
+    $query = "UPDATE student
             SET first_name = :first, last_name = :last, email = :email, year = :year,
                 city_address = :city, state_address = :state, zipcode_address = :zip
             WHERE computing_ID = :computingID";
-  $statement = $db->prepare($query);
-  $statement->bindValue(':computingID', $computingID);
-  $statement->bindValue(':first', $first);
-  $statement->bindValue(':last', $last);
-  $statement->bindValue(':email', $email);
-  $statement->bindValue(':year', $year);
-  $statement->bindValue(':city', $city);
-  $statement->bindValue(':state', $state);
-  $statement->bindValue(':zip', $zip);
-  $statement->execute();
-  $statement->closeCursor();
+    $statement = $db->prepare($query);
+    $statement->bindValue(':computingID', $computingID);
+    $statement->bindValue(':first', $first);
+    $statement->bindValue(':last', $last);
+    $statement->bindValue(':email', $email);
+    $statement->bindValue(':year', $year);
+    $statement->bindValue(':city', $city);
+    $statement->bindValue(':state', $state);
+    $statement->bindValue(':zip', $zip);
+    $statement->execute();
+    $statement->closeCursor();
 }
 
-function deleteUser($computingID) {
+function deleteUser($computingID)
+{
     global $db;
     $query = "DELETE FROM student WHERE computing_ID = :computingID";
     $statement = $db->prepare($query);
@@ -197,29 +207,31 @@ function deleteUser($computingID) {
     $statement->closeCursor();
 }
 
-function createEvent($title, $description, $month_date, $day_date, $year_date, $start_time, $end_time, $venue_id, $cio_id, $computing_ID) {
-  global $db;
+function createEvent($title, $description, $month_date, $day_date, $year_date, $start_time, $end_time, $venue_id, $cio_id, $computing_ID)
+{
+    global $db;
 
-  $query = "INSERT INTO Events (title, description, month_date, day_date, year_date, start_time, end_time, venue_id, cio_id, computing_ID)
+    $query = "INSERT INTO Events (title, description, month_date, day_date, year_date, start_time, end_time, venue_id, cio_id, computing_ID)
             VALUES (:title, :description, :month_date, :day_date, :year_date, :start_time, :end_time, :venue_id, :cio_id, :computing_ID)";
 
-  $statement = $db->prepare($query);
-  $statement->bindValue(':title', $title);
-  $statement->bindValue(':description', $description);
-  $statement->bindValue(':month_date', $month_date);
-  $statement->bindValue(':day_date', $day_date);
-  $statement->bindValue(':year_date', $year_date);
-  $statement->bindValue(':start_time', $start_time);
-  $statement->bindValue(':end_time', $end_time);
-  $statement->bindValue(':venue_id', $venue_id);
-  $statement->bindValue(':cio_id', $cio_id);
-  $statement->bindValue(':computing_ID', $computing_ID);
+    $statement = $db->prepare($query);
+    $statement->bindValue(':title', $title);
+    $statement->bindValue(':description', $description);
+    $statement->bindValue(':month_date', $month_date);
+    $statement->bindValue(':day_date', $day_date);
+    $statement->bindValue(':year_date', $year_date);
+    $statement->bindValue(':start_time', $start_time);
+    $statement->bindValue(':end_time', $end_time);
+    $statement->bindValue(':venue_id', $venue_id);
+    $statement->bindValue(':cio_id', $cio_id);
+    $statement->bindValue(':computing_ID', $computing_ID);
 
-  $statement->execute();
-  $statement->closeCursor();
+    $statement->execute();
+    $statement->closeCursor();
 }
 
-function getAllEvents() {
+function getAllEvents()
+{
     global $db;
     $query = "SELECT * FROM event ORDER BY event_date DESC";
     $statement = $db->prepare($query);
@@ -228,6 +240,3 @@ function getAllEvents() {
     $statement->closeCursor();
     return $results;
 }
-
-
-?>
