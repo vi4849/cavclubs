@@ -4,6 +4,7 @@
 // Ensure session is started so we can set session variables on successful login
 if (session_status() == PHP_SESSION_NONE) {
   session_start();
+  $_SESSION = array();
 }
 $isExistingUser = null;
 $loginStatus = null;
@@ -16,6 +17,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       $_SESSION['username'] = $isExistingUser['computing_ID'];
       $_SESSION['full_name'] = trim(($isExistingUser['first_name'] ?? '') . ' ' . ($isExistingUser['last_name'] ?? ''));
       $_SESSION['email'] = $isExistingUser['email'] ?? '';
+      
+      if(isCIOExecutive($_POST['computingid']))
+        $_SESSION['user_type'] = "cio_exec";
+      else
+        $_SESSION['user_type'] = "student";
 
       header("Location: index.php?page=home");
       exit();
@@ -63,3 +69,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </body>
 
 </html>
+
+
+

@@ -1,7 +1,8 @@
 <?php
+session_start(); //start session before connecting to the db to ensure that session variables (ex. user type: cio_exec, student, root) is loaded in
 require("connect-db.php");
 require("request-db.php");
-session_start();
+
 
 // Determine current user's computing ID from session
 $computingID = null;

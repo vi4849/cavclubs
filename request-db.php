@@ -25,6 +25,21 @@ function checkIfUserExists($computingID, $password)
     }
 }
 
+function isCIOExecutive($computing_ID)
+{
+    global $db;
+    $query = "SELECT 1 FROM cio_executive WHERE computing_ID = :computing_ID LIMIT 1";
+    $statement = $db->prepare($query);
+    $statement->bindValue(':computing_ID', $computing_ID);
+    $statement->execute();
+
+    $row = $statement->fetch(); // fetch 1 row, returns false if no row is fetched
+    $statement->closeCursor();
+
+    if ($row == false) return false;
+    else return true;
+}
+
 
 function isUniqueEmail($email)
 {

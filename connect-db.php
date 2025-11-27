@@ -4,7 +4,16 @@ $config = require 'config.php';
 $localhost = $config['LOCAL_IP_HOST']; 
 $cloudhost = $config['CLOUD_SQL_HOST']; 
 $dbname = $config['DB_NAME'];
-$username = $config['DB_USER'];
+if(isset($_SESSION['user_type']) && $_SESSION['user_type']!=null) 
+{
+   $username = $_SESSION['user_type'];
+   // echo $username; //useful for debugging
+}
+else 
+{
+   $username = $config['DB_USER'];
+   // echo $username; //useful for debugging
+}
 $password = $config['DB_PASS'];
 $isAppEngine = getenv('GAE_ENV') === 'standard';
 

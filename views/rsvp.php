@@ -1,7 +1,7 @@
 <?php
+session_start();
 require("connect-db.php");
 require("request-db.php");
-session_start();
 
 // must be logged in
 $current = $_SESSION['username'] ?? $_SESSION['computingid'] ?? null;
