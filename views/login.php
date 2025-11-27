@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <body>
   <?php
   if (!empty($loginStatus)) {
-    echo "<div class='alert alert-danger alert-dismissable'>Login failed. Please check your computing ID or password.</div>";
+    echo "<div class='alert alert-danger alert-dismissable'>Login failed. Incorrect computing ID or password.</div>";
   }
   ?>
 
