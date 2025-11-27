@@ -39,6 +39,9 @@ switch ($page) {
     case 'signout':
         include('views/signout.php');
         break;
+    case "manage_cio_events":
+        include("manage_cio_events.php");
+        break;
     default:
         echo "404 - Page not found";
         break;

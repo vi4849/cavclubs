@@ -25,6 +25,9 @@
                 <li class="nav-item">
                     <a class="nav-link" href="index.php?page=create_event">Create Event</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="index.php?page=manage_cio_events">Manage CIO Events</a>
+                </li>
             <?php } ?>
             <li class="nav-item">
               <a class="nav-link" href="index.php?page=rsvp_history">My RSVPs</a>
