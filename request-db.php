@@ -323,18 +323,16 @@ function searchEvents($keyword = '', $category = '', $date = '')
 }
 
 /* RSVP helpers */
-function createRsvp($event_id, $computing_ID, $status, $guests = 0, $comment = '')
+function createRsvp($event_id, $computing_ID, $status)
 {
     global $db;
-    // use NOW() for MySQL compatibility
-    $query = "INSERT INTO rsvp (event_id, computing_ID, status, guests, comment, created_at, updated_at) VALUES (:event_id, :computing_ID, :status, :guests, :comment, NOW(), NOW())";
-    $stmt = $db->prepare($query);
-    $stmt->bindValue(':event_id', $event_id);
-    $stmt->bindValue(':computing_ID', $computing_ID);
-    $stmt->bindValue(':status', $status);
-    $stmt->bindValue(':guests', $guests);
-    $stmt->bindValue(':comment', $comment);
+    // Use MySQL INSERT ... ON DUPLICATE KEY UPDATE to upsert based on composite PK (computing_ID,event_id)
+    $query = "INSERT INTO rsvp (computing_ID, event_id, status, rsvp_timestamp) VALUES (:computing_ID, :event_id, :status, NOW()) ON DUPLICATE KEY UPDATE status = VALUES(status), rsvp_timestamp = NOW()";
     try {
+        $stmt = $db->prepare($query);
+        $stmt->bindValue(':computing_ID', $computing_ID);
+        $stmt->bindValue(':event_id', $event_id);
+        $stmt->bindValue(':status', $status);
         $stmt->execute();
         $stmt->closeCursor();
         return true;
@@ -347,7 +345,8 @@ function createRsvp($event_id, $computing_ID, $status, $guests = 0, $comment = '
 function getRsvpsByUser($computing_ID)
 {
     global $db;
-    $query = "SELECT r.*, e.title, e.month_date, e.day_date, e.year_date FROM rsvp r JOIN event e ON r.event_id = e.event_id WHERE r.computing_ID = :computing_ID ORDER BY r.updated_at DESC";
+    // select fields that actually exist in the rsvp table + event meta
+    $query = "SELECT r.computing_ID, r.event_id, r.status, r.rsvp_timestamp, e.title, e.month_date, e.day_date, e.year_date FROM rsvp r JOIN event e ON r.event_id = e.event_id WHERE r.computing_ID = :computing_ID ORDER BY r.rsvp_timestamp DESC";
     try {
         $stmt = $db->prepare($query);
         $stmt->bindValue(':computing_ID', $computing_ID);
@@ -379,16 +378,16 @@ function getRsvpByUserAndEvent($computing_ID, $event_id)
     }
 }
 
-function updateRsvp($rsvp_id, $status, $guests = 0, $comment = '')
+// Update RSVP for composite key (computing_ID + event_id)
+function updateRsvp($computing_ID, $event_id, $status)
 {
     global $db;
-    $query = "UPDATE rsvp SET status = :status, guests = :guests, comment = :comment, updated_at = NOW() WHERE rsvp_id = :rsvp_id";
+    $query = "UPDATE rsvp SET status = :status, rsvp_timestamp = NOW() WHERE computing_ID = :computing_ID AND event_id = :event_id";
     try {
         $stmt = $db->prepare($query);
         $stmt->bindValue(':status', $status);
-        $stmt->bindValue(':guests', $guests);
-        $stmt->bindValue(':comment', $comment);
-        $stmt->bindValue(':rsvp_id', $rsvp_id);
+        $stmt->bindValue(':computing_ID', $computing_ID);
+        $stmt->bindValue(':event_id', $event_id);
         $stmt->execute();
         $stmt->closeCursor();
         return true;
@@ -398,13 +397,14 @@ function updateRsvp($rsvp_id, $status, $guests = 0, $comment = '')
     }
 }
 
-function deleteRsvp($rsvp_id)
+function deleteRsvp($computing_ID, $event_id)
 {
     global $db;
-    $query = "DELETE FROM rsvp WHERE rsvp_id = :rsvp_id";
+    $query = "DELETE FROM rsvp WHERE computing_ID = :computing_ID AND event_id = :event_id";
     try {
         $stmt = $db->prepare($query);
-        $stmt->bindValue(':rsvp_id', $rsvp_id);
+        $stmt->bindValue(':computing_ID', $computing_ID);
+        $stmt->bindValue(':event_id', $event_id);
         $stmt->execute();
         $stmt->closeCursor();
         return true;

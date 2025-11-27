@@ -31,15 +31,14 @@ $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rsvp_submit'])) {
     $status = $_POST['status'] ?? 'Going';
-    $guests = intval($_POST['guests'] ?? 0);
-    $comment = trim($_POST['comment'] ?? '');
 
     try {
         if ($existing) {
-            updateRsvp($existing['rsvp_id'], $status, $guests, $comment);
+            // update using composite key (computing_ID + event_id)
+            updateRsvp($current, $event_id, $status);
             $message = 'RSVP updated.';
         } else {
-            createRsvp($event_id, $current, $status, $guests, $comment);
+            createRsvp($event_id, $current, $status);
             $message = 'RSVP recorded.';
         }
         // reload existing
@@ -77,15 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rsvp_submit'])) {
                                 </select>
                             </div>
 
-                            <div class="mb-3">
-                                <label class="form-label">Guests</label>
-                                <input type="number" name="guests" class="form-control" min="0" value="<?php echo htmlspecialchars($existing['guests'] ?? 0); ?>">
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Comment</label>
-                                <textarea name="comment" class="form-control" rows="3"><?php echo htmlspecialchars($existing['comment'] ?? ''); ?></textarea>
-                            </div>
+                            <!-- The rsvp table currently stores only status and timestamp. -->
 
                             <div class="d-flex gap-2">
                                 <button type="submit" name="rsvp_submit" class="btn btn-dark">Save RSVP</button>
