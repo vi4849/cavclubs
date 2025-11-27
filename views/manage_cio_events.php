@@ -1,7 +1,19 @@
 <?php
 session_start();
+
+// temporarily unset user_type so connect-db.php uses default DB credentials
+if (isset($_SESSION['user_type'])) {
+    $temp_user_type = $_SESSION['user_type'];
+    unset($_SESSION['user_type']);
+}
+
 require("connect-db.php");
 require("request-db.php");
+
+// restore user_type for page logic
+if (isset($temp_user_type)) {
+    $_SESSION['user_type'] = $temp_user_type;
+}
 
 // Must be logged in
 if (!isset($_SESSION['computingid'])) {
@@ -59,12 +71,12 @@ function eventRsvpCounts($id, $db) {
     <p class="text-muted">You are an executive for:</p>
 
     <?php foreach($cios as $c): ?>
-        <span class="badge bg-primary me-1"><?php echo $c['cio_name']; ?></span>
+        <span class="badge bg-primary me-1"><?php echo htmlspecialchars($c['cio_name']); ?></span>
     <?php endforeach; ?>
 
     <hr>
 
-    <?php if(count($events)==0): ?>
+    <?php if(count($events) == 0): ?>
         <div class="alert alert-info">No events yet for your CIOs.</div>
         <a href="index.php?page=browse_events" class="btn btn-primary">Browse Events</a>
     <?php else: ?>
