@@ -12,11 +12,11 @@ if (!$current) {
 $message = '';
 $error = '';
 
-// handle delete of an RSVP
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_rsvp_id'])) {
-    $rid = intval($_POST['delete_rsvp_id']);
+// handle delete of an RSVP — POST provides event_id and we use current user's computing ID
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_event_id'])) {
+    $event_id = intval($_POST['delete_event_id']);
     try {
-        deleteRsvp($rid);
+        deleteRsvp($current, $event_id);
         $message = 'RSVP deleted.';
     } catch (Exception $e) {
         $error = 'Failed to delete RSVP: ' . htmlspecialchars($e->getMessage());
@@ -49,13 +49,13 @@ $rsvps = getRsvpsByUser($current);
                         <div>
                             <h5 class="mb-1"><?php echo htmlspecialchars($r['title']); ?></h5>
                             <p class="mb-1 text-muted"><?php echo htmlspecialchars("{$r['month_date']}/{$r['day_date']}/{$r['year_date']}"); ?></p>
-                            <p class="mb-1"><strong>Status:</strong> <?php echo htmlspecialchars($r['status']); ?> &nbsp; <strong>Guests:</strong> <?php echo htmlspecialchars($r['guests']); ?></p>
-                            <?php if (!empty($r['comment'])): ?><p class="mb-1"><?php echo htmlspecialchars($r['comment']); ?></p><?php endif; ?>
+                            <p class="mb-1"><strong>Status:</strong> <?php echo htmlspecialchars($r['status']); ?></p>
+                            <p class="small text-muted">Responded: <?php echo htmlspecialchars($r['rsvp_timestamp']); ?></p>
                         </div>
                         <div class="ms-auto d-flex gap-2">
                             <a href="index.php?page=rsvp&event_id=<?php echo htmlspecialchars($r['event_id']); ?>" class="btn btn-outline-primary btn-sm">Edit</a>
                             <form method="post" action="" onsubmit="return confirm('Delete this RSVP?');">
-                                <input type="hidden" name="delete_rsvp_id" value="<?php echo htmlspecialchars($r['rsvp_id']); ?>">
+                                <input type="hidden" name="delete_event_id" value="<?php echo htmlspecialchars($r['event_id']); ?>">
                                 <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                             </form>
                         </div>

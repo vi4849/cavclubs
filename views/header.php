@@ -15,7 +15,19 @@
         <ul class="navbar-nav ms-auto flex-wrap">
           <!-- check if currently logged in, display Log out button 
                otherwise, display sign up and log in buttons -->
-          <?php if (!isset($_SESSION['username'])) { ?>
+            <li class="nav-item">
+              <a class="nav-link" href="index.php?page=about">About</a>
+            </li>
+            <li class="nav-item">
+            <a class="nav-link" href="index.php?page=browse_events">Browse Events</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="index.php?page=create_event">Create Event</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="index.php?page=rsvp_history">My RSVPs</a>
+          </li>
+            <?php if (!isset($_SESSION['username'])) { ?>
             <li class="nav-item">
               <a class="nav-link" href="index.php?page=login">Login</a>
             </li>
@@ -30,19 +42,6 @@
               <a class="nav-link" href="index.php?page=signout">Logout</a>
             </li>
           <?php } ?>
-
-          <li class="nav-item">
-            <a class="nav-link" href="index.php?page=browse_events">Browse Events</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="index.php?page=create_event">Create Event</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="index.php?page=about">About</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="index.php?page=rsvp_history">My RSVPs</a>
-          </li>
           <li class="nav-item">
             <a class="nav-link" href="index.php?page=delete_user">Delete Account</a>
           </li>
