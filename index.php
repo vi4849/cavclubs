@@ -33,6 +33,9 @@ switch ($page) {
     case 'delete_user':
         include('views/delete_user.php');
         break;
+    case 'signout':
+        include('views/signout.php');
+        break;
     default:
         echo "404 - Page not found";
         break;

@@ -12,7 +12,7 @@
       </button>
       <!-- Navbar links: updated to point at view pages routed via index.php?page=... -->
       <div class="collapse navbar-collapse" id="collapsibleNavbar">
-        <ul class="navbar-nav ms-auto">
+        <ul class="navbar-nav me-auto flex-wrap">
           <!-- check if currently logged in, display Log out button 
                otherwise, display sign up and log in buttons -->
           <?php if (!isset($_SESSION['username'])) { ?>
@@ -27,7 +27,7 @@
               <a class="nav-link" href="index.php?page=profile">Profile</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="signout.php">Logout</a>
+              <a class="nav-link" href="index.php?page=signout">Logout</a>
             </li>
           <?php } ?>
 
