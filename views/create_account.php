@@ -1,8 +1,8 @@
-<?php require("connect-db.php"); ?>
-<?php require("request-db.php"); ?>
-
-
 <?php
+session_start();
+require("connect-db.php");
+require("request-db.php");
+
 $errorMessage = null;
 $list_of_cios = getAllCIONames();
 
@@ -22,9 +22,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
             insertMultiple('student_minor', $_POST['computingid'], 'minor_name', $_POST['minors']);
           if(!empty($_POST['majors']))
             insertMultiple('student_major', $_POST['computingid'], 'major_name', $_POST['majors']);
-          foreach ($_POST['cios'] as $cioID) 
-            addCIOExecutive($_POST['computingid'], $cioID);
-          header("Location: index.php?page=home");
+          if(!empty($_POST['cios']))
+          {
+            foreach ($_POST['cios'] as $cioID) 
+              addCIOExecutive($_POST['computingid'], $cioID);
+            $_SESSION['user_type'] = "cio_exec";
+          }
+          else
+            $_SESSION['user_type'] = "student";
+          header("Location: index.php?page=login");
           exit();
         }
         catch (Exception $e) 

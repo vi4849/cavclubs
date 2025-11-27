@@ -1,10 +1,13 @@
 <?php
-include 'connect-db.php'; // uses $db (PDO connection)
+session_start();
+require("connect-db.php");
+require("request-db.php");
+
 $message = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['createEventBtn'])) {
-    $title = $_POST['title'] ?? '';
-    $description = $_POST['description'] ?? '';
+    $title = trim($_POST['title'] ?? '');
+    $description = trim($_POST['description'] ?? '');
     $month_date = $_POST['month_date'] ?? '';
     $day_date = $_POST['day_date'] ?? '';
     $year_date = $_POST['year_date'] ?? '';
@@ -12,16 +15,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['createEventBtn'])) {
     $end_time = $_POST['end_time'] ?? '';
     $venue_id = $_POST['venue_id'] ?? '';
     $cio_id = $_POST['cio_id'] ?? '';
-    $computing_ID = $_POST['computing_ID'] ?? '';
+    $computing_ID = trim($_POST['computing_ID'] ?? '');
 
-    // Validate required fields
     if (!$title || !$month_date || !$day_date || !$year_date || !$start_time || !$end_time || !$venue_id || !$cio_id || !$computing_ID) {
         $message = "Missing required fields. Please fill out all fields.";
     } else {
         try {
             $stmt = $db->prepare(
                 "INSERT INTO event (title, description, month_date, day_date, year_date, start_time, end_time, venue_id, cio_id, computing_ID)
-                 VALUES (:title, :description, :month_date, :day_date, :year_date, :start_time, :end_time, :venue_id, :cio_id, :computing_ID)"
+                                 VALUES (:title, :description, :month_date, :day_date, :year_date, :start_time, :end_time, :venue_id, :cio_id, :computing_ID)"
             );
             $stmt->execute([
                 ':title' => $title,
@@ -41,30 +43,111 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['createEventBtn'])) {
         }
     }
 }
+
+// Fetch venues and CIOs for select inputs
+$venues = $db->query("SELECT venue_id, building_location, room_location FROM venue ORDER BY building_location ASC")->fetchAll(PDO::FETCH_ASSOC);
+$cios = $db->query("SELECT cio_id, cio_name FROM cio ORDER BY cio_name ASC")->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
-<h2>Create a New Event</h2>
+<!DOCTYPE html>
+<html lang="en">
+<?php require("base.php"); ?>
 
-<?php if (!empty($message)): ?>
-    <p><?php echo $message; ?></p>
-<?php endif; ?>
+<body class="bg-light">
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <h1 class="fw-bold">Create Event</h1>
+            <p class="text-muted">Add a new campus event</p>
+        </div>
 
-<form method="post" action="">
-  <input type="text" name="title" placeholder="Event Title" required>
-  <textarea name="description" placeholder="Event Description"></textarea>
+        <?php if (!empty($message)): ?>
+            <div class="alert <?php echo strpos($message, 'successfully') !== false ? 'alert-success' : 'alert-danger'; ?>"><?php echo htmlspecialchars($message); ?></div>
+        <?php endif; ?>
 
-  <input type="number" name="month_date" placeholder="Month (e.g. 11)" min="1" max="12" required>
-  <input type="number" name="day_date" placeholder="Day (e.g. 5)" min="1" max="31" required>
-  <input type="number" name="year_date" placeholder="Year (e.g. 2025)" min="2024" required>
+        <form method="post" action="" class="card shadow-sm border-0 mb-4">
+            <div class="card-body">
+                <div class="row g-3">
 
-  <input type="time" name="start_time" required>
-  <input type="time" name="end_time" required>
+                    <div class="col-12">
+                        <label class="form-label">Title</label>
+                        <input type="text" name="title" class="form-control" placeholder="Event title" value="<?php echo htmlspecialchars($_POST['title'] ?? ''); ?>" required>
+                    </div>
 
-  <input type="text" name="venue_id" placeholder="Venue ID" required>
-  <input type="text" name="cio_id" placeholder="CIO ID" required>
-  <input type="text" name="computing_ID" placeholder="Creator Computing ID" required>
+                    <div class="col-12">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" class="form-control" rows="4" placeholder="Event description"><?php echo htmlspecialchars($_POST['description'] ?? ''); ?></textarea>
+                    </div>
 
-  <button type="submit" name="createEventBtn">Create Event</button>
-</form>
+                    <div class="col-md-4">
+                        <label class="form-label">Month</label>
+                        <input type="number" name="month_date" class="form-control" min="1" max="12" value="<?php echo htmlspecialchars($_POST['month_date'] ?? ''); ?>" required>
+                    </div>
 
-<p><a href="index.php?page=home">Back to Home</a></p>
+                    <div class="col-md-4">
+                        <label class="form-label">Day</label>
+                        <input type="number" name="day_date" class="form-control" min="1" max="31" value="<?php echo htmlspecialchars($_POST['day_date'] ?? ''); ?>" required>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Year</label>
+                        <input type="number" name="year_date" class="form-control" min="2024" value="<?php echo htmlspecialchars($_POST['year_date'] ?? ''); ?>" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Start time</label>
+                        <input type="time" name="start_time" class="form-control" value="<?php echo htmlspecialchars($_POST['start_time'] ?? ''); ?>" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">End time</label>
+                        <input type="time" name="end_time" class="form-control" value="<?php echo htmlspecialchars($_POST['end_time'] ?? ''); ?>" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Venue</label>
+                        <select name="venue_id" class="form-select" required>
+                            <option value="">Select venue</option>
+                            <?php foreach ($venues as $v): ?>
+                                <option value="<?php echo htmlspecialchars($v['venue_id']); ?>" <?php echo (isset($_POST['venue_id']) && $_POST['venue_id'] == $v['venue_id']) ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($v['building_location'] . (!empty($v['room_location']) ? (', ' . $v['room_location']) : '')); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Organization (CIO)</label>
+                        <select name="cio_id" class="form-select" required>
+                            <option value="">Select organization</option>
+                            <?php foreach ($cios as $c): ?>
+                                <option value="<?php echo htmlspecialchars($c['cio_id']); ?>" <?php echo (isset($_POST['cio_id']) && $_POST['cio_id'] == $c['cio_id']) ? 'selected' : ''; ?>><?php echo htmlspecialchars($c['cio_name']); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label">Creator Computing ID</label>
+                        <input type="text" name="computing_ID" class="form-control" placeholder="e.g., abc1yz" value="<?php echo htmlspecialchars($_POST['computing_ID'] ?? ''); ?>" required>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="d-flex gap-2">
+                            <button type="submit" name="createEventBtn" class="btn btn-dark">Create Event</button>
+                            <a href="index.php?page=home" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </form>
+
+        <div class="text-center mt-3">
+            <a href="index.php?page=browse_events" class="btn btn-outline-secondary">Browse Events</a>
+        </div>
+
+    </div>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+</body>
+
+</html>

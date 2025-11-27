@@ -25,6 +25,21 @@ function checkIfUserExists($computingID, $password)
     }
 }
 
+function isCIOExecutive($computing_ID)
+{
+    global $db;
+    $query = "SELECT 1 FROM cio_executive WHERE computing_ID = :computing_ID LIMIT 1";
+    $statement = $db->prepare($query);
+    $statement->bindValue(':computing_ID', $computing_ID);
+    $statement->execute();
+
+    $row = $statement->fetch(); // fetch 1 row, returns false if no row is fetched
+    $statement->closeCursor();
+
+    if ($row == false) return false;
+    else return true;
+}
+
 
 function isUniqueEmail($email)
 {
@@ -241,7 +256,8 @@ function createEvent($title, $description, $month_date, $day_date, $year_date, $
 //     return $results;
 // }
 
-function getEvents() {
+function getEvents()
+{
     global $db;
 
     $query = "
@@ -259,7 +275,8 @@ function getEvents() {
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-function searchEvents($keyword = '', $category = '', $date = '') {
+function searchEvents($keyword = '', $category = '', $date = '')
+{
     global $db;
 
     $query = "
@@ -312,11 +329,102 @@ function searchEvents($keyword = '', $category = '', $date = '') {
 
     $stmt = $db->prepare($query);
 
-    foreach ($params as $key => $value) 
-    {
+    foreach ($params as $key => $value) {
         $stmt->bindValue($key, $value);
     }
 
     $stmt->execute();
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+/* RSVP helpers */
+function createRsvp($event_id, $computing_ID, $status)
+{
+    global $db;
+    // Use MySQL INSERT ... ON DUPLICATE KEY UPDATE to upsert based on composite PK (computing_ID,event_id)
+    $query = "INSERT INTO rsvp (computing_ID, event_id, status, rsvp_timestamp) VALUES (:computing_ID, :event_id, :status, NOW()) ON DUPLICATE KEY UPDATE status = VALUES(status), rsvp_timestamp = NOW()";
+    try {
+        $stmt = $db->prepare($query);
+        $stmt->bindValue(':computing_ID', $computing_ID);
+        $stmt->bindValue(':event_id', $event_id);
+        $stmt->bindValue(':status', $status);
+        $stmt->execute();
+        $stmt->closeCursor();
+        return true;
+    } catch (Exception $e) {
+        error_log("[CavClubs] createRsvp failed: " . $e->getMessage());
+        return false;
+    }
+}
+
+function getRsvpsByUser($computing_ID)
+{
+    global $db;
+    // select fields that actually exist in the rsvp table + event meta
+    $query = "SELECT r.computing_ID, r.event_id, r.status, r.rsvp_timestamp, e.title, e.month_date, e.day_date, e.year_date FROM rsvp r JOIN event e ON r.event_id = e.event_id WHERE r.computing_ID = :computing_ID ORDER BY r.rsvp_timestamp DESC";
+    try {
+        $stmt = $db->prepare($query);
+        $stmt->bindValue(':computing_ID', $computing_ID);
+        $stmt->execute();
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stmt->closeCursor();
+        return $result;
+    } catch (Exception $e) {
+        error_log("[CavClubs] getRsvpsByUser failed: " . $e->getMessage());
+        return [];
+    }
+}
+
+function getRsvpByUserAndEvent($computing_ID, $event_id)
+{
+    global $db;
+    $query = "SELECT * FROM rsvp WHERE computing_ID = :computing_ID AND event_id = :event_id LIMIT 1";
+    try {
+        $stmt = $db->prepare($query);
+        $stmt->bindValue(':computing_ID', $computing_ID);
+        $stmt->bindValue(':event_id', $event_id);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $stmt->closeCursor();
+        return $result;
+    } catch (Exception $e) {
+        error_log("[CavClubs] getRsvpByUserAndEvent failed: " . $e->getMessage());
+        return null;
+    }
+}
+
+// Update RSVP for composite key (computing_ID + event_id)
+function updateRsvp($computing_ID, $event_id, $status)
+{
+    global $db;
+    $query = "UPDATE rsvp SET status = :status, rsvp_timestamp = NOW() WHERE computing_ID = :computing_ID AND event_id = :event_id";
+    try {
+        $stmt = $db->prepare($query);
+        $stmt->bindValue(':status', $status);
+        $stmt->bindValue(':computing_ID', $computing_ID);
+        $stmt->bindValue(':event_id', $event_id);
+        $stmt->execute();
+        $stmt->closeCursor();
+        return true;
+    } catch (Exception $e) {
+        error_log("[CavClubs] updateRsvp failed: " . $e->getMessage());
+        return false;
+    }
+}
+
+function deleteRsvp($computing_ID, $event_id)
+{
+    global $db;
+    $query = "DELETE FROM rsvp WHERE computing_ID = :computing_ID AND event_id = :event_id";
+    try {
+        $stmt = $db->prepare($query);
+        $stmt->bindValue(':computing_ID', $computing_ID);
+        $stmt->bindValue(':event_id', $event_id);
+        $stmt->execute();
+        $stmt->closeCursor();
+        return true;
+    } catch (Exception $e) {
+        error_log("[CavClubs] deleteRsvp failed: " . $e->getMessage());
+        return false;
+    }
 }
