@@ -21,11 +21,25 @@ switch ($page) {
     case 'browse_events':
         include('views/browse_events.php');
         break;
+    case 'rsvp':
+        include('views/rsvp.php');
+        break;
+    case 'rsvp_history':
+        include('views/rsvp_history.php');
+        break;
+    case 'profile':
+        include('views/profile.php');
+        break;
+    case 'about':
+        include('views/about.php');
+        break;
     case 'delete_user':
         include('views/delete_user.php');
+        break;
+    case 'signout':
+        include('views/signout.php');
         break;
     default:
         echo "404 - Page not found";
         break;
 }
-?>
