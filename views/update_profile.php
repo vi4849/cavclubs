@@ -1,7 +1,7 @@
 <?php
+session_start();
 require("connect-db.php");
 require("request-db.php");
-session_start();
 
 // Support both session keys 'computingid' (older) and 'username' (login sets this)
 $computingID = null;

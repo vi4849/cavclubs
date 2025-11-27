@@ -1,3 +1,4 @@
+<?php session_start(); ?>
 <?php require("connect-db.php"); ?>
 <!DOCTYPE html>
 <html>

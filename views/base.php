@@ -46,7 +46,7 @@
                 var alert = new bootstrap.Alert(alertNode);
                 setTimeout(function() {
                     alert.close();
-                }, 1500); 
+                }, 3000); 
             }
         });
     </script>
