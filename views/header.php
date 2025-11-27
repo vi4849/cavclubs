@@ -13,36 +13,41 @@
         <ul class="navbar-nav ms-auto flex-wrap">
           <!-- check if currently logged in, display Log out button 
                otherwise, display sign up and log in buttons -->
+          
+              <li class="nav-item">
+                <a class="nav-link" href="index.php?page=about">About</a>
+              </li>
+          <?php if (isset($_SESSION['user_type'])) { ?>
             <li class="nav-item">
-              <a class="nav-link" href="index.php?page=about">About</a>
+              <a class="nav-link" href="index.php?page=browse_events">Browse Events</a>
             </li>
+            <?php if ($_SESSION['user_type'] == 'cio_exec'){ ?>
+                <li class="nav-item">
+                    <a class="nav-link" href="index.php?page=create_event">Create Event</a>
+                </li>
+            <?php } ?>
             <li class="nav-item">
-            <a class="nav-link" href="index.php?page=browse_events">Browse Events</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="index.php?page=create_event">Create Event</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="index.php?page=rsvp_history">My RSVPs</a>
-          </li>
-            <?php if (!isset($_SESSION['username'])) { ?>
-            <li class="nav-item">
-              <a class="nav-link" href="index.php?page=login">Login</a>
+              <a class="nav-link" href="index.php?page=rsvp_history">My RSVPs</a>
             </li>
+              <?php if (!isset($_SESSION['username'])) { ?>
+              <li class="nav-item">
+                <a class="nav-link" href="index.php?page=login">Login</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="index.php?page=create_account">Sign Up</a>
+              </li>
+            <?php  } else { ?>
+              <li class="nav-item">
+                <a class="nav-link" href="index.php?page=profile">Profile</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="index.php?page=signout">Logout</a>
+              </li>
+            <?php } ?>
             <li class="nav-item">
-              <a class="nav-link" href="index.php?page=create_account">Sign Up</a>
-            </li>
-          <?php  } else { ?>
-            <li class="nav-item">
-              <a class="nav-link" href="index.php?page=profile">Profile</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="index.php?page=signout">Logout</a>
+              <a class="nav-link" href="index.php?page=delete_user">Delete Account</a>
             </li>
           <?php } ?>
-          <li class="nav-item">
-            <a class="nav-link" href="index.php?page=delete_user">Delete Account</a>
-          </li>
         </ul>
       </div>
     </div>
