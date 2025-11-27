@@ -241,7 +241,8 @@ function createEvent($title, $description, $month_date, $day_date, $year_date, $
 //     return $results;
 // }
 
-function getEvents() {
+function getEvents()
+{
     global $db;
 
     $query = "
@@ -259,7 +260,8 @@ function getEvents() {
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-function searchEvents($keyword = '', $category = '', $date = '') {
+function searchEvents($keyword = '', $category = '', $date = '')
+{
     global $db;
 
     $query = "
@@ -312,11 +314,102 @@ function searchEvents($keyword = '', $category = '', $date = '') {
 
     $stmt = $db->prepare($query);
 
-    foreach ($params as $key => $value) 
-    {
+    foreach ($params as $key => $value) {
         $stmt->bindValue($key, $value);
     }
 
     $stmt->execute();
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+/* RSVP helpers */
+function createRsvp($event_id, $computing_ID, $status, $guests = 0, $comment = '')
+{
+    global $db;
+    // use NOW() for MySQL compatibility
+    $query = "INSERT INTO rsvp (event_id, computing_ID, status, guests, comment, created_at, updated_at) VALUES (:event_id, :computing_ID, :status, :guests, :comment, NOW(), NOW())";
+    $stmt = $db->prepare($query);
+    $stmt->bindValue(':event_id', $event_id);
+    $stmt->bindValue(':computing_ID', $computing_ID);
+    $stmt->bindValue(':status', $status);
+    $stmt->bindValue(':guests', $guests);
+    $stmt->bindValue(':comment', $comment);
+    try {
+        $stmt->execute();
+        $stmt->closeCursor();
+        return true;
+    } catch (Exception $e) {
+        error_log("[CavClubs] createRsvp failed: " . $e->getMessage());
+        return false;
+    }
+}
+
+function getRsvpsByUser($computing_ID)
+{
+    global $db;
+    $query = "SELECT r.*, e.title, e.month_date, e.day_date, e.year_date FROM rsvp r JOIN event e ON r.event_id = e.event_id WHERE r.computing_ID = :computing_ID ORDER BY r.updated_at DESC";
+    try {
+        $stmt = $db->prepare($query);
+        $stmt->bindValue(':computing_ID', $computing_ID);
+        $stmt->execute();
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stmt->closeCursor();
+        return $result;
+    } catch (Exception $e) {
+        error_log("[CavClubs] getRsvpsByUser failed: " . $e->getMessage());
+        return [];
+    }
+}
+
+function getRsvpByUserAndEvent($computing_ID, $event_id)
+{
+    global $db;
+    $query = "SELECT * FROM rsvp WHERE computing_ID = :computing_ID AND event_id = :event_id LIMIT 1";
+    try {
+        $stmt = $db->prepare($query);
+        $stmt->bindValue(':computing_ID', $computing_ID);
+        $stmt->bindValue(':event_id', $event_id);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $stmt->closeCursor();
+        return $result;
+    } catch (Exception $e) {
+        error_log("[CavClubs] getRsvpByUserAndEvent failed: " . $e->getMessage());
+        return null;
+    }
+}
+
+function updateRsvp($rsvp_id, $status, $guests = 0, $comment = '')
+{
+    global $db;
+    $query = "UPDATE rsvp SET status = :status, guests = :guests, comment = :comment, updated_at = NOW() WHERE rsvp_id = :rsvp_id";
+    try {
+        $stmt = $db->prepare($query);
+        $stmt->bindValue(':status', $status);
+        $stmt->bindValue(':guests', $guests);
+        $stmt->bindValue(':comment', $comment);
+        $stmt->bindValue(':rsvp_id', $rsvp_id);
+        $stmt->execute();
+        $stmt->closeCursor();
+        return true;
+    } catch (Exception $e) {
+        error_log("[CavClubs] updateRsvp failed: " . $e->getMessage());
+        return false;
+    }
+}
+
+function deleteRsvp($rsvp_id)
+{
+    global $db;
+    $query = "DELETE FROM rsvp WHERE rsvp_id = :rsvp_id";
+    try {
+        $stmt = $db->prepare($query);
+        $stmt->bindValue(':rsvp_id', $rsvp_id);
+        $stmt->execute();
+        $stmt->closeCursor();
+        return true;
+    } catch (Exception $e) {
+        error_log("[CavClubs] deleteRsvp failed: " . $e->getMessage());
+        return false;
+    }
 }
