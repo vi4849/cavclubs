@@ -1,53 +1,57 @@
 <?php session_start(); ?>
 
-<header>  
+<header>
   <nav class="navbar navbar-expand-md navbar-dark bg-dark">
-    <div class="container-fluid">            
-      <a class="navbar-brand  d-flex align-items-center" href="/"> 
+    <div class="container-fluid">
+      <a class="navbar-brand  d-flex align-items-center" href="index.php?page=home">
         <img src="images/logo.png" alt="CavClubs Logo" width="40" height="40" class="d-inline-block align-text-top">
         <span style="color: #dbdbdb">CavClubs</span>
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar" aria-controls="collapsibleNavbar" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
-      <!-- TODO: fill in placeholders + link pages once created  --> 
+      <!-- Navbar links: updated to point at view pages routed via index.php?page=... -->
       <div class="collapse navbar-collapse" id="collapsibleNavbar">
         <ul class="navbar-nav ms-auto">
           <!-- check if currently logged in, display Log out button 
                otherwise, display sign up and log in buttons -->
-          <?php if (!isset($_SESSION['username'])) { ?>              
+          <?php if (!isset($_SESSION['username'])) { ?>
             <li class="nav-item">
-              <a class="nav-link" href="signin.php">Login</a>
+              <a class="nav-link" href="index.php?page=login">Login</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="index.php?page=update_profile">Profile</a>
-            </li>              
-          <?php  } else { ?>                    
-            <li class="nav-item">                  
+              <a class="nav-link" href="index.php?page=create_account">Sign Up</a>
+            </li>
+          <?php  } else { ?>
+            <li class="nav-item">
+              <a class="nav-link" href="index.php?page=profile">Profile</a>
+            </li>
+            <li class="nav-item">
               <a class="nav-link" href="signout.php">Logout</a>
             </li>
           <?php } ?>
-        
+
           <li class="nav-item">
-            <a class="nav-link" href="#">Placeholder 1</a>
-          </li>            
+            <a class="nav-link" href="index.php?page=browse_events">Browse Events</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="index.php?page=create_event">Create Event</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="index.php?page=about">About</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="index.php?page=contact">Contact</a>
+          </li>
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="dropdown01" role="button" data-bs-toggle="dropdown" aria-expanded="false">Dropdown</a>
+            <a class="nav-link dropdown-toggle" href="#" id="dropdown01" role="button" data-bs-toggle="dropdown" aria-expanded="false">More</a>
             <ul class="dropdown-menu" aria-labelledby="dropdown01">
-              <li><a class="dropdown-item" href="#">1</a></li>
-              <li><a class="dropdown-item" href="#">2</a></li>
-              <li><a class="dropdown-item" href="#">3</a></li>
-              <li><a class="dropdown-item" href="#">4</a></li>
+              <li><a class="dropdown-item" href="index.php?page=delete_user">Delete Account</a></li>
+              <li><a class="dropdown-item" href="#">Help</a></li>
             </ul>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">Placeholder 2</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">Placeholder 3</a>
           </li>
         </ul>
       </div>
     </div>
   </nav>
-</header>    
+</header>

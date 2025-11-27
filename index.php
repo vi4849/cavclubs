@@ -21,6 +21,15 @@ switch ($page) {
     case 'browse_events':
         include('views/browse_events.php');
         break;
+    case 'profile':
+        include('views/profile.php');
+        break;
+    case 'about':
+        include('views/about.php');
+        break;
+    case 'contact':
+        include('views/contact.php');
+        break;
     case 'delete_user':
         include('views/delete_user.php');
         break;
@@ -28,4 +37,3 @@ switch ($page) {
         echo "404 - Page not found";
         break;
 }
-?>
