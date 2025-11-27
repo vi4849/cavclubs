@@ -12,7 +12,7 @@
       </button>
       <!-- Navbar links: updated to point at view pages routed via index.php?page=... -->
       <div class="collapse navbar-collapse" id="collapsibleNavbar">
-        <ul class="navbar-nav me-auto flex-wrap">
+        <ul class="navbar-nav ms-auto flex-wrap">
           <!-- check if currently logged in, display Log out button 
                otherwise, display sign up and log in buttons -->
           <?php if (!isset($_SESSION['username'])) { ?>
@@ -41,14 +41,10 @@
             <a class="nav-link" href="index.php?page=about">About</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="index.php?page=contact">Contact</a>
+            <a class="nav-link" href="index.php?page=rsvp_history">My RSVPs</a>
           </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="dropdown01" role="button" data-bs-toggle="dropdown" aria-expanded="false">More</a>
-            <ul class="dropdown-menu" aria-labelledby="dropdown01">
-              <li><a class="dropdown-item" href="index.php?page=delete_user">Delete Account</a></li>
-              <li><a class="dropdown-item" href="#">Help</a></li>
-            </ul>
+          <li class="nav-item">
+            <a class="nav-link" href="index.php?page=delete_user">Delete Account</a>
           </li>
         </ul>
       </div>
