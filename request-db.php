@@ -256,7 +256,7 @@ function createEvent($title, $description, $month_date, $day_date, $year_date, $
 //     return $results;
 // }
 
-function getEvents()
+function getEvents($limit, $offset)
 {
     global $db;
 
@@ -268,14 +268,30 @@ function getEvents()
         LEFT JOIN part_of p ON c.cio_id = p.cio_id
         LEFT JOIN category cat ON p.category_id = cat.category_id
         ORDER BY e.year_date DESC, e.month_date DESC, e.day_date DESC
+        LIMIT :limit OFFSET :offset
     ";
 
     $stmt = $db->prepare($query);
+    $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
     $stmt->execute();
+
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-function searchEvents($keyword = '', $category = '', $date = '')
+function countEvents()
+{
+    global $db;
+
+    $query = "SELECT COUNT(*) as event_count FROM event";
+
+    $stmt = $db->prepare($query);
+    $stmt->execute();
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $result['event_count'] ?? 0;
+}
+
+function searchEvents($keyword = '', $category = '', $date = '', $limit, $offset)
 {
     global $db;
 
@@ -325,16 +341,70 @@ function searchEvents($keyword = '', $category = '', $date = '')
         }
     }
 
-    $query .= " ORDER BY e.year_date DESC, e.month_date DESC, e.day_date DESC";
+    $query .= " ORDER BY e.year_date DESC, e.month_date DESC, e.day_date DESC
+               ";
 
+    if ($limit !== null && $offset !== null) {
+        $query .= " LIMIT :limit OFFSET :offset ";
+    }
     $stmt = $db->prepare($query);
 
     foreach ($params as $key => $value) {
         $stmt->bindValue($key, $value);
     }
 
+    if ($limit !== null && $offset !== null) {
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+    }
+
+
     $stmt->execute();
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function countSearchEvents($keyword = '', $category = '', $date = '')
+{
+    global $db;
+
+    $query = "
+        SELECT COUNT(DISTINCT e.event_id) AS total
+        FROM event e
+        JOIN cio c ON e.cio_id = c.cio_id
+        LEFT JOIN part_of p ON c.cio_id = p.cio_id
+        LEFT JOIN category cat ON p.category_id = cat.category_id
+        WHERE 1=1
+    ";
+
+    $params = [];
+
+    if (!empty($keyword)) {
+        $query .= " AND (e.title LIKE :kw OR e.description LIKE :kw OR c.cio_name LIKE :kw)";
+        $params[':kw'] = '%' . $keyword . '%';
+    }
+
+    if (!empty($category)) {
+        $query .= " AND cat.category_name = :category";
+        $params[':category'] = $category;
+    }
+
+    if (!empty($date)) {
+        $dt = DateTime::createFromFormat('Y-m-d', $date);
+        if ($dt) {
+            $query .= " AND e.year_date = :yr AND e.month_date = :mo AND e.day_date = :dy";
+            $params[':yr'] = (int)$dt->format('Y');
+            $params[':mo'] = (int)$dt->format('n');
+            $params[':dy'] = (int)$dt->format('j');
+        }
+    }
+
+    $stmt = $db->prepare($query);
+    foreach ($params as $key => $value) {
+        $stmt->bindValue($key, $value);
+    }
+
+    $stmt->execute();
+    return $stmt->fetch(PDO::FETCH_ASSOC)['total'];
 }
 
 /* RSVP helpers */

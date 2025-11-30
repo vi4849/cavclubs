@@ -1,15 +1,20 @@
 <?php
+session_start();
 require("connect-db.php");
 require("request-db.php");
 
+$eventsPerPage = 12;
+$page = isset($_GET['p']) ? max(1, intval($_GET['p'])) : 1;
+$offset = ($page - 1) * $eventsPerPage;
+
+$totalEvents = 0;
+
 $events = [];
 
-// handle event deletion (from the red X on a card)
 $deleteMessage = '';
 $deleteError = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_event_id'])) {
     $delId = $_POST['delete_event_id'];
-    // fetch event to check ownership
     $stmt = $db->prepare("SELECT computing_ID FROM event WHERE event_id = :id");
     $stmt->execute([':id' => $delId]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -31,18 +36,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_event_id'])) {
             $deleteError = 'You do not have permission to delete this event.';
         }
     }
-    // reload events after any delete
-    $events = getEvents();
+    $events = getEvents($eventsPerPage, $offset);
+    $totalEvents = countEvents();
 } else {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $keyword  = trim($_POST['keyword'] ?? '');
-        $category = trim($_POST['category'] ?? '');
-        $date     = trim($_POST['date'] ?? '');
 
-        $events = searchEvents($keyword, $category, $date);
+        $keyword = trim($_POST['keyword'] ?? '');
+        $category = trim($_POST['category'] ?? '');
+        $date = trim($_POST['date'] ?? '');
+
+        $isBlankSearch =
+            ($keyword === '' && $category === '' && $date === '');
+
+        if ($isBlankSearch) {
+            //treat blank search as normal browse with pagination
+            $isSearch = false;
+            $totalEvents = countEvents();
+            $events = getEvents($eventsPerPage, $offset);
+        } else {
+            //search has actual filters -> NO pagination
+            $isSearch = true;
+            $events = searchEvents($keyword, $category, $date, null, null);
+            $totalEvents = count($events);
+        }
+
     } else {
-        $events = getEvents();
+        //normal browse with pagination
+        $isSearch = false;
+        $totalEvents = countEvents();
+        $events = getEvents($eventsPerPage, $offset);
     }
+
 }
 ?>
 
@@ -111,7 +135,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_event_id'])) {
                     <div class="col-md-4">
                         <div class="card h-100 shadow-sm border-0 position-relative">
                             <?php
-                            // show delete button only to owner or admin
+                            //show delete button only to owner or admin
                             $current = $_SESSION['username'] ?? $_SESSION['computingid'] ?? null;
                             $isAdmin = !empty($_SESSION['is_admin']);
                             if ($current && ($isAdmin || $current === $event['computing_ID'])): ?>
@@ -161,6 +185,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_event_id'])) {
             </div>
         <?php else: ?>
             <div class="alert alert-info text-center mt-4">No events found.</div>
+        <?php endif; ?>
+
+        <?php
+        $totalPages = ceil($totalEvents / $eventsPerPage);
+
+        if (!$isSearch && $totalPages > 1):
+        ?>
+            <nav>
+                <ul class="pagination justify-content-center mt-4">
+
+                    <li class="page-item <?php if ($page <= 1) echo 'disabled'; ?>">
+                        <a class="page-link" href="?page=browse_events&p=<?php echo $page - 1; ?>">Previous</a>
+                    </li>
+
+                    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                        <li class="page-item <?php if ($page == $i) echo 'active'; ?>">
+                            <a class="page-link" href="?page=browse_events&p=<?php echo $i; ?>">
+                                <?php echo $i; ?>
+                            </a>
+                        </li>
+                    <?php endfor; ?>
+
+                    <li class="page-item <?php if ($page >= $totalPages) echo 'disabled'; ?>">
+                        <a class="page-link" href="?page=browse_events&p=<?php echo $page + 1; ?>">Next</a>
+                    </li>
+
+                </ul>
+            </nav>
         <?php endif; ?>
 
         <div class="text-center mt-5">
