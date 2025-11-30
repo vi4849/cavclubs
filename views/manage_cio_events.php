@@ -1,27 +1,8 @@
 <?php
-session_start();
-
-// temporarily unset user_type so connect-db.php uses default DB credentials
-if (isset($_SESSION['user_type'])) {
-    $temp_user_type = $_SESSION['user_type'];
-    unset($_SESSION['user_type']);
-}
-
 require("connect-db.php");
 require("request-db.php");
 
-// restore user_type for page logic
-if (isset($temp_user_type)) {
-    $_SESSION['user_type'] = $temp_user_type;
-}
-
-// Must be logged in
-if (!isset($_SESSION['computingid'])) {
-    header("Location: index.php?page=login");
-    exit();
-}
-
-$computingid = $_SESSION['computingid'];
+$computingid = $_SESSION['username'];
 
 // Verify user is CIO exec
 $query = "SELECT c.cio_id, c.cio_name 
