@@ -1,6 +1,8 @@
 <?php
 require("connect-db.php");
-require("request-db.php");
+
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 $computingid = $_SESSION['username'];
 
@@ -19,20 +21,27 @@ if (!$isExec) {
     exit();
 }
 
-// build list of CIO ids
+//list of CIO ids
 $cio_ids = array_column($cios, 'cio_id');
-$placeholders = implode(',', array_fill(0, count($cio_ids), '?'));
 
-$sql = "SELECT e.*, c.cio_name 
-        FROM event e JOIN cio c ON e.cio_id = c.cio_id
-        WHERE e.cio_id IN ($placeholders)
-        ORDER BY e.year_date DESC, e.month_date DESC, e.day_date DESC";
+$events = [];
 
-$stmt = $db->prepare($sql);
-$stmt->execute($cio_ids);
-$events = $stmt->fetchAll();
+foreach ($cio_ids as $cid) {
+    $stmt = $db->prepare("CALL fetchEventsByCIO(?)");
+    $stmt->execute([$cid]);
 
-// helper for RSVP numbers
+    //fetch your data
+    $rows = $stmt->fetchAll();
+    $events = array_merge($events, $rows);
+
+    //flush ALL additional result sets
+    do {
+    } while ($stmt->nextRowset());
+
+    $stmt->closeCursor();
+}
+
+//helper for RSVP numbers
 function eventRsvpCounts($id, $db) {
     $c = ["Going"=>0,"Maybe"=>0,"Not Going"=>0];
     $q = "SELECT status, COUNT(*) AS cnt FROM rsvp WHERE event_id = :id GROUP BY status";
