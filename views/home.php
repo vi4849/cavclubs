@@ -1,24 +1,51 @@
-<?php session_start() ?>
-<?php require("connect-db.php"); ?>
+<?php 
+require("connect-db.php"); 
+include("base.php"); //base.php contains header.php  
+?>
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">    
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="author" content="Shriya, Vivian, Pallavi, & Rakshitha">
-    <meta name="description" content="CS 4750 Final Project">
-    <meta name="keywords" content="CS 4750, CIO, UVA">
-    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">  
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">  
-  </head>
-  <body>  
-    <?php include("header.php") ?> 
-    <?php
-      echo $_SESSION['user_type']; ?>
-
-    <?php // include('footer.html') ?> 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+  <body class="bg-light">  
+    <br>
+    <div class="container mt-4">
+      <h1 class="mb-4 text-center"> <b>Welcome to CavClubs! </b></h1>
+      <p style="font-size: 18px;" class="text-muted" >CavClubs is a website that allows UVA students to easily browse and RSVP to upcoming events organized by CIOs on Grounds. The platform also allows CIO executive members to create events and estimate headcount for upcoming events. Through this centralized platform, we hope to make event discovery and attendance a streamlined experience! </p>
+      <br><br>
+      <div class="row justify-content-center g-4">
+        <div class="col">
+          <a href="index.php?page=browse_events" class="text-decoration-none">
+            <div class="card shadow-sm h-100 text-center p-4">
+              <i class="bi bi-calendar-event fs-1 mb-3 text-dark"></i>
+              <h5 class="card-title text-dark">Browse Events</h5>
+            </div>
+          </a>
+        </div>
+        <div class="col">
+          <a href="index.php?page=rsvp_history" class="text-decoration-none">
+            <div class="card shadow-sm h-100 text-center p-4">
+              <i class="bi bi-clock fs-1 mb-3 text-dark"></i>
+              <h5 class="card-title text-dark">My RSVPs</h5>
+            </div>
+          </a>
+        </div>
+        <div class="col">
+          <a href="index.php?page=profile" class="text-decoration-none">
+            <div class="card shadow-sm h-100 text-center p-4">
+              <i class="bi bi-person-circle fs-1 mb-3 text-dark"></i>
+              <h5 class="card-title text-dark">Profile</h5>
+            </div>
+          </a>
+        </div>
+        <?php if (isset($_SESSION['user_type']) && $_SESSION['user_type'] == 'cio_exec'){ ?>
+          <div class="col">
+            <a href="index.php?page=create_event" class="text-decoration-none">
+              <div class="card shadow-sm h-100 text-center p-4">
+                <i class="bi bi-gear fs-1 mb-3 text-dark"></i>
+                <h5 class="card-title text-dark">Create CIO Event</h5>
+              </div>
+            </a>
+          </div>
+        <?php } ?>
+      </div>
+    </div>
   </body>
-  <p> Successfully logged in!</p>
 </html>
