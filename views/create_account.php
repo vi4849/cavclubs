@@ -156,7 +156,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
             </div>
             <div id="cioContainer">
               <br>
-              <p> <u> Select the CIOs you are an executive member of: </u> </p>
+              <p> <u> Select the CIOs you are an executive member of:</u></p>
+              </p>  (hold CTRL or CMD to select multiple CIOs) </p>
+              </label>
               <select class="form-select" name="cios[]" id="cios" multiple aria-label="multiple select example">
               </select>
             </div>
