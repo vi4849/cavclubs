@@ -16,38 +16,96 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['createEventBtn'])) {
     $cio_id = $_POST['cio_id'] ?? '';
     $computing_ID = trim($_POST['computing_ID'] ?? '');
 
-    #required fields check
+    //required fields check
     if (!$title || !$month_date || !$day_date || !$year_date || !$start_time || !$end_time || !$venue_id || !$cio_id || !$computing_ID) {
         $message = "Missing required fields. Please fill out all fields.";
     } 
 
-    #enforcing end time must be after start time
+    //enforcing end time must be after start time
     else if ($start_time >= $end_time) {
         $message = "End time must be after start time.";
     }
-    
+
+    //duplicate event check
     else {
-        try {
-            $stmt = $db->prepare(
-                "INSERT INTO event (title, description, month_date, day_date, year_date, start_time, end_time, venue_id, cio_id, computing_ID)
-                                 VALUES (:title, :description, :month_date, :day_date, :year_date, :start_time, :end_time, :venue_id, :cio_id, :computing_ID)"
+        $stmt = $db -> prepare(
+            "SELECT COUNT(*) FROM event
+             WHERE title = :title
+             AND month_date = :month_date
+             AND day_date = :day_date
+             AND year_date = :year_date
+             AND start_time = :start_time
+             AND end_time = :end_time
+             AND cio_id = :cio_id"
+        );
+        
+        $stmt -> execute([
+            ':title' => $title,
+            ':month_date' => $month_date,
+            ':day_date' => $day_date,
+            ':year_date' => $year_date,
+            ':start_time' => $start_time,
+            ':end_time' => $end_time,
+            ':cio_id' => $cio_id
+        ]);
+
+        if ($stmt -> fetchColumn() > 0){
+            $message = "An event with the same title and time already exists for this organization.";
+        }
+
+        //venue/time conflict check
+        else {
+            $stmt = $db -> prepare(
+                "SELECT COUNT(*) FROM event
+                 WHERE venue_id = :venue_id
+                 AND month_date = :month_date
+                 AND day_date = :day_date
+                 AND year_date = :year_date
+                 AND :start_time < end_time
+                 AND :end_time > start_time"
             );
-            $stmt->execute([
-                ':title' => $title,
-                ':description' => $description,
+
+            $stmt -> execute([
+                ':venue_id' => $venue_id,
                 ':month_date' => $month_date,
                 ':day_date' => $day_date,
                 ':year_date' => $year_date,
                 ':start_time' => $start_time,
-                ':end_time' => $end_time,
-                ':venue_id' => $venue_id,
-                ':cio_id' => $cio_id,
-                ':computing_ID' => $computing_ID
+                ':end_time' => $end_time
             ]);
-            $message = "Event created successfully!";
-        } catch (PDOException $e) {
-            $message = "Failed to create event: " . htmlspecialchars($e->getMessage());
+
+            if ($stmt -> fetchColumn() > 0){
+                $message = "The selected venue is already booked during that specified date and time.";
+            }
+
+            //final insert
+            else {
+                try{
+                    $stmt = $db -> prepare(
+                        "INSERT INTO event (title, description, month_date, day_date, year_date, start_time, end_time, venue_id, cio_id, computing_ID)
+                         VALUES (:title, :description, :month_date, :day_date, :year_date, :start_time, :end_time, :venue_id, :cio_id, :computing_ID)"
+                    );
+
+                    $stmt -> execute([
+                        ':title' => $title,
+                        ':description' => $description,
+                        ':month_date' => $month_date,
+                        ':day_date' => $day_date,
+                        ':year_date' => $year_date,
+                        ':start_time' => $start_time,
+                        ':end_time' => $end_time,
+                        ':venue_id' => $venue_id,
+                        ':cio_id' => $cio_id,
+                        ':computing_ID' => $computing_ID
+                    ]);
+
+                    $message = "Event created successfully.";
+                } catch (PDOException $e) {
+                    $message = "Failed to create event: " . htmlspecialchars($e->getMessage());
+                }
+            }
         }
+
     }
 }
 
