@@ -214,10 +214,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_event_id'])) {
             </nav>
         <?php endif; ?>
 
-        <div class="text-center mt-5">
-            <a href="index.php?page=home" class="btn btn-secondary">Back to Home</a>
-        </div>
-
     </div>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">

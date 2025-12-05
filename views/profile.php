@@ -1,5 +1,17 @@
-<?php require("connect-db.php"); ?>
-<?php include("base.php"); ?>
+<?php 
+require("connect-db.php"); 
+include("base.php"); 
+
+if (isset($_SESSION['notification_message'])) {
+    echo '<div class="alert alert-success alert-dismissible fade show" role="alert">
+            ' . $_SESSION['notification_message'] . '
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>';
+
+    unset($_SESSION['notification_message']);
+}
+?>
+
 <!DOCTYPE html>
 <html>
 
@@ -24,12 +36,12 @@
                         </div>
                         <hr>
                         <p><strong>Email:</strong> <?php echo isset($_SESSION['email']) ? htmlspecialchars($_SESSION['email']) : 'email@example.com'; ?></p>
-                        <p><strong>Bio:</strong><br><?php echo isset($_SESSION['bio']) ? nl2br(htmlspecialchars($_SESSION['bio'])) : 'This user has not added a bio yet.'; ?></p>
-                        <p><strong>Clubs joined:</strong></p>
+                        <!-- <p><strong>Bio:</strong><br><?php echo isset($_SESSION['bio']) ? nl2br(htmlspecialchars($_SESSION['bio'])) : 'No bio has been added yet - click Edit Profile to add one!'; ?></p> -->
+                        <!-- <p><strong>Clubs joined:</strong></p>
                         <ul>
                             <li>Club A (placeholder)</li>
                             <li>Club B (placeholder)</li>
-                        </ul>
+                        </ul> -->
                     </div>
                 </div>
             </div>

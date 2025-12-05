@@ -36,13 +36,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
               insertMultiple('student_minor', $_POST['computingid'], 'minor_name', $_POST['minors']);
             if (!empty($_POST['majors']))
               insertMultiple('student_major', $_POST['computingid'], 'major_name', $_POST['majors']);
-            if (!empty($_POST['cios'])) {
-              foreach ($_POST['cios'] as $cioID)
-                addCIOExecutive($_POST['computingid'], $cioID);
+            if (!empty($_POST['cio_ids'])) {
+              for ($i=0; $i<count($_POST['cio_ids']); $i++)
+                addCIOExecutive($_POST['computingid'], $_POST['cio_ids'][$i], $_POST['cio_roles'][$i]);
               $_SESSION['user_type'] = "cio_exec";
             } else
               $_SESSION['user_type'] = "student";
-            header("Location: index.php?page=login");
+            $_SESSION['username'] = $_POST['computingid'];
+            $_SESSION['full_name'] = trim(($_POST['firstname'] ?? '') . ' ' . ($_POST['lastname'] ?? ''));
+            $_SESSION['email'] = $_POST['email'] ?? '';
+            $_SESSION['notification_message'] = 'You have successfully created an account and logged in!'; #used to display a notification
+            header("Location: index.php?page=home");
             exit();
           } catch (Exception $e) {
             $errorMessage = "Unable to create account, error was: " . $e->getMessage();
@@ -83,16 +87,16 @@ if ($errorMessage != null) {
         </div>
         <div class="mb-3">
           <label for="computingid" class="form-label">Computing ID*</label>
-          <input type="text" name="computingid" id="computingid" class="form-control" required>
+          <input type="text" name="computingid" id="computingid" class="form-control" required placeholder="abc1de">
         </div>
         <div class="mb-3">
           <label for="email" class="form-label">Email*</label>
-          <input type="text" name="email" id="email" class="form-control" required>
+          <input type="text" name="email" id="email" class="form-control" required placeholder="abc1de@virginia.edu">
         </div>
         <div id="phoneContainer">
           <div class="form-group">
             <label for="phonenumber1">Phone Number</label>
-            <input type="text" class="form-control" id="phonenumber1" name="phonenumbers[]">
+            <input type="text" class="form-control" id="phonenumber1" name="phonenumbers[]" placeholder="7031234567">
           </div>
         </div>
         <button type="button" class="btn btn-light btn-sm" style="margin-top: 5px;" id="addPhone">+ Add Phone Number</button>
@@ -169,11 +173,15 @@ if ($errorMessage != null) {
               </div>
               <div id="cioContainer">
                 <br>
-                <p> <u> Select the CIOs you are an executive member of: </u> </p>
-                </p>  (hold CTRL or CMD to select multiple CIOs) </p>
-                <select class="form-select" name="cios[]" id="cios" multiple aria-label="multiple select example">
-                </select>
+                <p> <u> Select the CIO(s) you are an executive member of and your role: </u> </p>
+                <div class="form-group">
+                    <label for="cio">CIO</label>
+                    <select class="form-control" id="cio1_name" name="cio_ids[]" required></select>
+                    <label for="cio1_role">Role</label>
+                    <input type="text" class="form-control" id="cio1_role" name="cio_roles[]" placeholder="President" required>
+                </div>
               </div>
+              <button type="button" class="btn btn-light btn-sm" style="margin-top: 10px;" id="addCIO">+ Add CIO</button>
             </div>
             <div class="mb-3">
               <label for="password" class="form-label">Password*</label>
@@ -225,20 +233,47 @@ if ($errorMessage != null) {
       let phoneCount = 1;
       let majorCount = 1;
       let minorCount = 1;
+      let cioCount = 1;
 
       if ($('#cio_exec_no').is(':checked')) {
         $('#cioContainer').hide();
+        $('#addCIO').hide();
       }
+
+      $('#addCIO').click(function() {
+        cioCount++;
+        const html = `
+                  <div class="form-group mt-5">
+                    <label for="cio${cioCount}">CIO ${cioCount}</label>
+                    <select class="form-control" id="cio${cioCount}_name" name="cio_ids[]" required></select>
+                    <label for="cio1_role">Role</label>
+                    <input type="text" class="form-control" id="cio1_role" name="cio_roles[]" required>
+                    <button type="button" class="btn btn-outline-danger btn-sm remove-cio mt-2">Remove</button>
+                  </div>
+              `;
+        $('#cioContainer').append(html);
+
+        $.each(list_of_cios, function(index, cio) {
+          const option = `<option value="${cio.cio_id}">${cio.cio_name}</option>`;
+          $(`#cio${cioCount}_name`).append(option);
+        });
+      });
+
+      $('#cioContainer').on('click', '.remove-cio', function() {
+        $(this).closest('.form-group').remove();
+      });
 
       $('input[name="cio_exec"]').change(function() {
         if ($(this).val() === 'yes') {
           $.each(list_of_cios, function(index, cio) {
             const html = `<option value="${cio.cio_id}">${cio.cio_name}</option>`;
-            $('#cios').append(html);
+            $('#cio1_name').append(html);
           });
           $('#cioContainer').slideDown();
+          $('#addCIO').slideDown();
         } else {
           $('#cioContainer').slideUp();
+          $('#addCIO').slideUp();
         }
       });
 
