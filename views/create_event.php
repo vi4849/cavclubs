@@ -160,7 +160,7 @@ $cios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                     <div class="col-md-4">
                         <label class="form-label">Year</label>
-                        <input type="number" name="year_date" class="form-control" min="2024" value="<?php echo htmlspecialchars($_POST['year_date'] ?? ''); ?>" required>
+                        <input type="number" name="year_date" class="form-control" min="2025" value="<?php echo htmlspecialchars($_POST['year_date'] ?? ''); ?>" required>
                     </div>
 
                     <div class="col-md-6">
