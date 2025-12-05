@@ -101,6 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['createEventBtn'])) {
                     ]);
 
                     $message = "Event created successfully.";
+                    unset($_POST);
                 } catch (PDOException $e) {
                     $message = "Failed to create event: " . htmlspecialchars($e->getMessage());
                 }
