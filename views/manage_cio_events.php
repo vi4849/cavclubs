@@ -1,4 +1,5 @@
 <?php
+session_start();
 require("connect-db.php");
 
 error_reporting(E_ALL);
@@ -6,10 +7,9 @@ ini_set('display_errors', 1);
 
 $computingid = $_SESSION['username'];
 
-// Verify user is CIO exec
 $query = "SELECT c.cio_id, c.cio_name 
-          FROM cio c JOIN cio_executive ce 
-               ON c.cio_id = ce.cio_id
+          FROM cio c 
+          JOIN cio_executive ce ON c.cio_id = ce.cio_id
           WHERE ce.computing_id = :cid";
 $stmt = $db->prepare($query);
 $stmt->execute([':cid' => $computingid]);
@@ -21,33 +21,95 @@ if (!$isExec) {
     exit();
 }
 
-//list of CIO ids
 $cio_ids = array_column($cios, 'cio_id');
 
-$events = [];
+function searchCIOEvents($cioIds, $keyword = '', $date = '')
+{
+    global $db;
 
-foreach ($cio_ids as $cid) {
-    $stmt = $db->prepare("CALL fetchEventsByCIO(?)");
-    $stmt->execute([$cid]);
+    $inClause = implode(',', array_fill(0, count($cioIds), '?'));
 
-    //fetch your data
-    $rows = $stmt->fetchAll();
-    $events = array_merge($events, $rows);
+    $query = "
+        SELECT e.*, c.cio_name
+        FROM event e
+        JOIN cio c ON e.cio_id = c.cio_id
+        WHERE e.cio_id IN ($inClause)
+    ";
 
-    //flush ALL additional result sets
-    do {
-    } while ($stmt->nextRowset());
+    $params = $cioIds;
 
-    $stmt->closeCursor();
+    //keyword search
+    if (!empty($keyword)) {
+        $query .= " AND (e.title LIKE ? OR e.description LIKE ? OR c.cio_name LIKE ?)";
+        $params[] = "%$keyword%";
+        $params[] = "%$keyword%";
+        $params[] = "%$keyword%";
+    }
+
+    //specific date
+    if (!empty($date)) {
+        $dt = DateTime::createFromFormat('Y-m-d', $date);
+        if ($dt) {
+            $query .= " AND e.year_date = ? AND e.month_date = ? AND e.day_date = ?";
+            $params[] = (int)$dt->format('Y');
+            $params[] = (int)$dt->format('n');
+            $params[] = (int)$dt->format('j');
+        }
+    }
+
+    $query .= " ORDER BY e.year_date DESC, e.month_date DESC, e.day_date DESC";
+
+    $stmt = $db->prepare($query);
+    $stmt->execute($params);
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-//helper for RSVP numbers
+$isSearch = false;
+$events = [];
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    $keyword = trim($_POST['keyword'] ?? '');
+    $date = trim($_POST['date'] ?? '');
+    $blank = ($keyword === '' && $date === '');
+
+    if ($blank) {
+        foreach ($cio_ids as $cid) {
+            $stmt = $db->prepare("CALL fetchEventsByCIO(?)");
+            $stmt->execute([$cid]);
+            $rows = $stmt->fetchAll();
+            $events = array_merge($events, $rows);
+            while ($stmt->nextRowset()) {}
+            $stmt->closeCursor();
+        }
+    } else {
+        $isSearch = true;
+        $events = searchCIOEvents($cio_ids, $keyword, $date);
+    }
+
+} else {
+    foreach ($cio_ids as $cid) {
+        $stmt = $db->prepare("CALL fetchEventsByCIO(?)");
+        $stmt->execute([$cid]);
+        $rows = $stmt->fetchAll();
+        $events = array_merge($events, $rows);
+        while ($stmt->nextRowset()) {}
+        $stmt->closeCursor();
+    }
+}
+
 function eventRsvpCounts($id, $db) {
     $c = ["Going"=>0,"Maybe"=>0,"Not Going"=>0];
-    $q = "SELECT status, COUNT(*) AS cnt FROM rsvp WHERE event_id = :id GROUP BY status";
+    $q = "SELECT status, COUNT(*) AS cnt 
+          FROM rsvp 
+          WHERE event_id = :id 
+          GROUP BY status";
     $s = $db->prepare($q);
     $s->execute([":id"=>$id]);
-    foreach($s->fetchAll() as $r) $c[$r['status']] = $r['cnt'];
+    foreach($s->fetchAll() as $r) {
+        $c[$r['status']] = $r['cnt'];
+    }
     return $c;
 }
 ?>
@@ -66,9 +128,35 @@ function eventRsvpCounts($id, $db) {
 
     <hr>
 
+    <form method="POST" action="" class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-5">
+                    <input type="text"
+                           class="form-control"
+                           name="keyword"
+                           placeholder="Search events or CIO name..."
+                           value="<?php echo htmlspecialchars($_POST['keyword'] ?? ''); ?>">
+                </div>
+
+                <div class="col-md-5">
+                    <input type="date"
+                           class="form-control"
+                           name="date"
+                           value="<?php echo htmlspecialchars($_POST['date'] ?? ''); ?>">
+                </div>
+
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-dark w-100">Search</button>
+                </div>
+            </div>
+        </div>
+    </form>
+
     <?php if(count($events) == 0): ?>
-        <div class="alert alert-info">No events yet for your CIOs.</div>
+        <div class="alert alert-info">No events found.</div>
         <a href="index.php?page=browse_events" class="btn btn-primary">Browse Events</a>
+
     <?php else: ?>
 
     <table class="table table-striped mt-4">
@@ -96,13 +184,16 @@ function eventRsvpCounts($id, $db) {
                     <small>Not Going: <?= $r['Not Going'] ?></small>
                 </td>
                 <td>
-                    <a href="index.php?page=browse_events" class="btn btn-sm btn-outline-primary">View</a>
-                    <a href="index.php?page=rsvp&event_id=<?= $ev['event_id'] ?>" class="btn btn-sm btn-dark">View RSVPs</a>
+                    <a href="index.php?page=browse_events" 
+                       class="btn btn-sm btn-outline-primary">View</a>
+                    <a href="index.php?page=rsvp&event_id=<?= $ev['event_id'] ?>" 
+                       class="btn btn-sm btn-dark">View RSVPs</a>
                 </td>
             </tr>
             <?php endforeach; ?>
         </tbody>
     </table>
+
     <?php endif; ?>
 
 </div>
