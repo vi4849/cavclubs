@@ -16,9 +16,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['createEventBtn'])) {
     $cio_id = $_POST['cio_id'] ?? '';
     $computing_ID = trim($_POST['computing_ID'] ?? '');
 
+    #required fields check
     if (!$title || !$month_date || !$day_date || !$year_date || !$start_time || !$end_time || !$venue_id || !$cio_id || !$computing_ID) {
         $message = "Missing required fields. Please fill out all fields.";
-    } else {
+    } 
+
+    #enforcing end time must be after start time
+    else if ($start_time >= $end_time) {
+        $message = "End time must be after start time.";
+    }
+    
+    else {
         try {
             $stmt = $db->prepare(
                 "INSERT INTO event (title, description, month_date, day_date, year_date, start_time, end_time, venue_id, cio_id, computing_ID)
