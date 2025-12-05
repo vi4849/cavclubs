@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $_SESSION['user_type'] = "cio_exec";
       else
         $_SESSION['user_type'] = "student";
-      $_SESSION['login_success'] = 'You have successfully logged in!';
+      $_SESSION['notification_message'] = 'You have successfully logged in!';
       header("Location: index.php?page=home");
       exit();
     } else {

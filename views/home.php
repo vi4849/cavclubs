@@ -2,13 +2,13 @@
 require("connect-db.php"); 
 include("base.php"); //base.php contains header.php  
 
-if (isset($_SESSION['login_success'])) {
+if (isset($_SESSION['notification_message'])) {
     echo '<div class="alert alert-success alert-dismissible fade show" role="alert">
-            ' . $_SESSION['login_success'] . '
+            ' . $_SESSION['notification_message'] . '
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
           </div>';
 
-    unset($_SESSION['login_success']);
+    unset($_SESSION['notification_message']);
 }
 ?>
 <!DOCTYPE html>

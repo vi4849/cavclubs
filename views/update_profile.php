@@ -1,6 +1,7 @@
 <?php
 require("connect-db.php");
 require("request-db.php");
+require("base.php");
 
 // Support both session keys 'computingid' (older) and 'username' (login sets this)
 $computingID = null;
@@ -42,13 +43,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['updateBtn'])) {
       $state,
       $zip
     );
-    $successMsg = "Profile updated successfully!";
     // reload updated user info
     $user = getUserByComputingID($computingID);
 
     // update session display values
     $_SESSION['full_name'] = trim($first . ' ' . $last);
     $_SESSION['email'] = $email;
+
+    $_SESSION['notification_message'] = 'Profile updated successfully!';
+
+    header("Location: index.php?page=profile");
   } catch (Exception $e) {
     $errorMsg = "Error updating profile: " . htmlspecialchars($e->getMessage());
   }
@@ -57,8 +61,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['updateBtn'])) {
 
 <!DOCTYPE html>
 <html>
-<?php require("base.php"); ?>
-
 <body>
   <div class="form-container">
     <div class="large-form-box">

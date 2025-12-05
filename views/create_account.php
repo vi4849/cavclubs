@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $_SESSION['username'] = $_POST['computingid'];
             $_SESSION['full_name'] = trim(($_POST['firstname'] ?? '') . ' ' . ($_POST['lastname'] ?? ''));
             $_SESSION['email'] = $_POST['email'] ?? '';
-            $_SESSION['login_success'] = 'You have successfully created an account and logged in!'; #used to display a notification
+            $_SESSION['notification_message'] = 'You have successfully created an account and logged in!'; #used to display a notification
             header("Location: index.php?page=home");
             exit();
           } catch (Exception $e) {
