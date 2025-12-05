@@ -149,11 +149,11 @@ function getAllCIONames()
     return $result;
 }
 
-function addCIOExecutive($computing_ID, $cio_id)
+function addCIOExecutive($computing_ID, $cio_id, $cio_role)
 {
     global $db;
     $curr_year = date('Y');
-    $role = "President";
+    $role = $cio_role;
 
     //set default start and end dates to be 8/20 (so all term lengths are 1 year long)
     if (date('m') < 6) {

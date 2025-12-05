@@ -1,6 +1,15 @@
 <?php 
 require("connect-db.php"); 
 include("base.php"); //base.php contains header.php  
+
+if (isset($_SESSION['login_success'])) {
+    echo '<div class="alert alert-success alert-dismissible fade show" role="alert">
+            ' . $_SESSION['login_success'] . '
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>';
+
+    unset($_SESSION['login_success']);
+}
 ?>
 <!DOCTYPE html>
 <html>
