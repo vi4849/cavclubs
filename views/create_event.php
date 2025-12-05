@@ -1,6 +1,7 @@
 <?php
 require("connect-db.php");
 require("request-db.php");
+$user_id = $_SESSION['username'];
 
 $message = '';
 
@@ -111,7 +112,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['createEventBtn'])) {
 
 // Fetch venues and CIOs for select inputs
 $venues = $db->query("SELECT venue_id, building_location, room_location FROM venue ORDER BY building_location ASC")->fetchAll(PDO::FETCH_ASSOC);
-$cios = $db->query("SELECT cio_id, cio_name FROM cio ORDER BY cio_name ASC")->fetchAll(PDO::FETCH_ASSOC);
+$stmt = $db->prepare("SELECT c.cio_id, c.cio_name FROM cio c JOIN cio_executive ce ON c.cio_id = ce.cio_id WHERE ce.computing_ID = :uid ORDER BY c.cio_name ASC");
+$stmt->execute([':uid' => $user_id]);
+$cios = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
 ?>
 
 <!DOCTYPE html>
@@ -192,7 +196,7 @@ $cios = $db->query("SELECT cio_id, cio_name FROM cio ORDER BY cio_name ASC")->fe
 
                     <div class="col-12">
                         <label class="form-label">Creator Computing ID</label>
-                        <input type="text" name="computing_ID" class="form-control" placeholder="e.g., abc1yz" value="<?php echo htmlspecialchars($_POST['computing_ID'] ?? ''); ?>" required>
+                        <input type="text" name="computing_ID" class="form-control" value="<?php echo htmlspecialchars($_SESSION['username']); ?>" readonly>
                     </div>
 
                     <div class="col-12">
