@@ -31,9 +31,6 @@ switch ($page) {
     case 'profile':
         include('views/profile.php');
         break;
-    case 'about':
-        include('views/about.php');
-        break;
     case 'delete_user':
         include('views/delete_user.php');
         break;
