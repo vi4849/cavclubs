@@ -184,10 +184,7 @@ function eventRsvpCounts($id, $db) {
                     <small>Not Going: <?= $r['Not Going'] ?></small>
                 </td>
                 <td>
-                    <a href="index.php?page=browse_events" 
-                       class="btn btn-sm btn-outline-primary">View</a>
-                    <a href="index.php?page=rsvp&event_id=<?= $ev['event_id'] ?>" 
-                       class="btn btn-sm btn-dark">View RSVPs</a>
+                    
                 </td>
             </tr>
             <?php endforeach; ?>
