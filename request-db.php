@@ -428,3 +428,43 @@ function deleteRsvp($computing_ID, $event_id)
         return false;
     }
 }
+
+function searchCIOEvents($cioIds, $keyword = '', $date = '')
+{
+    global $db;
+
+    $inClause = implode(',', array_fill(0, count($cioIds), '?'));
+
+    $query = "
+        SELECT e.*, c.cio_name
+        FROM event e
+        JOIN cio c ON e.cio_id = c.cio_id
+        WHERE e.cio_id IN ($inClause)
+    ";
+
+    $params = $cioIds;
+
+    if (!empty($keyword)) {
+        $query .= " AND (e.title LIKE ? OR e.description LIKE ? OR c.cio_name LIKE ?)";
+        $params[] = "%$keyword%";
+        $params[] = "%$keyword%";
+        $params[] = "%$keyword%";
+    }
+
+    if (!empty($date)) {
+        $dt = DateTime::createFromFormat('Y-m-d', $date);
+        if ($dt) {
+            $query .= " AND e.year_date = ? AND e.month_date = ? AND e.day_date = ?";
+            $params[] = (int)$dt->format('Y');
+            $params[] = (int)$dt->format('n');
+            $params[] = (int)$dt->format('j');
+        }
+    }
+
+    $query .= " ORDER BY e.year_date DESC, e.month_date DESC, e.day_date DESC";
+
+    $stmt = $db->prepare($query);
+    $stmt->execute($params);
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
