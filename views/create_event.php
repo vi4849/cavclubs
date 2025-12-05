@@ -198,17 +198,12 @@ $cios = $db->query("SELECT cio_id, cio_name FROM cio ORDER BY cio_name ASC")->fe
                     <div class="col-12">
                         <div class="d-flex gap-2">
                             <button type="submit" name="createEventBtn" class="btn btn-dark">Create Event</button>
-                            <a href="index.php?page=home" class="btn btn-secondary">Cancel</a>
                         </div>
                     </div>
 
                 </div>
             </div>
         </form>
-
-        <div class="text-center mt-3">
-            <a href="index.php?page=browse_events" class="btn btn-outline-secondary">Browse Events</a>
-        </div>
 
     </div>
 

@@ -82,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_delete'])) {
 
                 <form method="post" action="" class="d-flex gap-2">
                     <button type="submit" name="confirm_delete" class="btn btn-danger">Yes, delete my account</button>
-                    <a href="index.php?page=home" class="btn btn-secondary">Cancel</a>
+                    <a href="index.php?page=profile" class="btn btn-secondary">Cancel</a>
                 </form>
             </div>
         </div>
