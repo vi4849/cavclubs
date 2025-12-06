@@ -192,12 +192,12 @@ function getUserByComputingID($computingID)
     return $result;
 }
 
-function updateUserProfile($computingID, $first, $last, $email, $year, $city, $state, $zip)
+function updateUserProfile($computingID, $first, $last, $email, $year, $street, $city, $state, $zip, $major = null, $minor = null, $phone = null)
 {
     global $db;
     $query = "UPDATE student
             SET first_name = :first, last_name = :last, email = :email, year = :year,
-                city_address = :city, state_address = :state, zipcode_address = :zip
+                street_address = :street, city_address = :city, state_address = :state, zipcode_address = :zip
             WHERE computing_ID = :computingID";
     $statement = $db->prepare($query);
     $statement->bindValue(':computingID', $computingID);
@@ -205,11 +205,40 @@ function updateUserProfile($computingID, $first, $last, $email, $year, $city, $s
     $statement->bindValue(':last', $last);
     $statement->bindValue(':email', $email);
     $statement->bindValue(':year', $year);
+    $stmt->bindValue(':street', $street);
     $statement->bindValue(':city', $city);
     $statement->bindValue(':state', $state);
     $statement->bindValue(':zip', $zip);
     $statement->execute();
     $statement->closeCursor();
+
+    // Optional: Update major
+    if ($major !== null) {
+        // Delete existing majors, then insert new one
+        $db->prepare("DELETE FROM student_major WHERE computing_ID = :computingID")
+           ->execute([':computingID' => $computingID]);
+        if (!empty($major)) {
+            insertMultiple('student_major', $computingID, 'major_name', is_array($major) ? $major : [$major]);
+        }
+    }
+
+    // Optional: Update minor
+    if ($minor !== null) {
+        $db->prepare("DELETE FROM student_minor WHERE computing_ID = :computingID")
+           ->execute([':computingID' => $computingID]);
+        if (!empty($minor)) {
+            insertMultiple('student_minor', $computingID, 'minor_name', is_array($minor) ? $minor : [$minor]);
+        }
+    }
+
+    // Optional: Update phone number(s)
+    if ($phone !== null) {
+        $db->prepare("DELETE FROM student_phone WHERE computing_ID = :computingID")
+           ->execute([':computingID' => $computingID]);
+        if (!empty($phone)) {
+            insertMultiple('student_phone', $computingID, 'phone_number', is_array($phone) ? $phone : [$phone]);
+        }
+    }
 }
 
 function deleteUser($computingID)
