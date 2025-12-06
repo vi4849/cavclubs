@@ -38,10 +38,10 @@ if (isset($_SESSION['notification_message'])) {
                         <p><strong>Email:</strong> <?php echo isset($_SESSION['email']) ? htmlspecialchars($_SESSION['email']) : 'email@example.com'; ?></p>
                         
                         <!-- Full Address -->
-                        <p><strong><Address:</strong><br>
-                            <?php
+                        <p><strong>Address:</strong><br>
+                            <?php 
                             $addressParts = [];
-                            if(!empty($_SESSION['street_address'])) $addressParts[] = htmlspecialchars($_SESSION['street_address']);
+                            if (!empty($_SESSION['street_address'])) $addressParts[] = htmlspecialchars($_SESSION['street_address']);
                             if (!empty($_SESSION['city_address'])) $addressParts[] = htmlspecialchars($_SESSION['city_address']);
                             if (!empty($_SESSION['state_address'])) $addressParts[] = htmlspecialchars($_SESSION['state_address']);
                             if (!empty($_SESSION['zipcode_address'])) $addressParts[] = htmlspecialchars($_SESSION['zipcode_address']);
@@ -54,7 +54,7 @@ if (isset($_SESSION['notification_message'])) {
                         <ul>
                             <li>Club A (placeholder)</li>
                             <li>Club B (placeholder)</li>
-                        </ul> -->
+                        </ul>
                     </div>
                 </div>
             </div>
