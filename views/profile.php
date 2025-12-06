@@ -24,6 +24,19 @@
                         </div>
                         <hr>
                         <p><strong>Email:</strong> <?php echo isset($_SESSION['email']) ? htmlspecialchars($_SESSION['email']) : 'email@example.com'; ?></p>
+                        
+                        <!-- Full Address -->
+                        <p><strong><Address:</strong><br>
+                            <?php
+                            $addressParts = [];
+                            if(!empty($_SESSION['street_address'])) $addressParts[] = htmlspecialchars($_SESSION['street_address']);
+                            if (!empty($_SESSION['city_address'])) $addressParts[] = htmlspecialchars($_SESSION['city_address']);
+                            if (!empty($_SESSION['state_address'])) $addressParts[] = htmlspecialchars($_SESSION['state_address']);
+                            if (!empty($_SESSION['zipcode_address'])) $addressParts[] = htmlspecialchars($_SESSION['zipcode_address']);
+                            echo !empty($addressParts) ? implode(", ", $addressParts) : "Address not provided.";
+                            ?>
+                        </p>
+                        
                         <p><strong>Bio:</strong><br><?php echo isset($_SESSION['bio']) ? nl2br(htmlspecialchars($_SESSION['bio'])) : 'This user has not added a bio yet.'; ?></p>
                         <p><strong>Clubs joined:</strong></p>
                         <ul>
