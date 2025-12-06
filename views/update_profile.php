@@ -36,6 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['updateBtn'])) {
     $major = trim($_POST['major'] ?? '');
     $minor = trim($_POST['minor'] ?? '');
     $phone = trim($_POST['phone_number'] ?? '');
+    $bio = trim($_POST['bio'] ?? '');
 
     updateUserProfile(
       $computingID,
@@ -46,7 +47,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['updateBtn'])) {
       $street,
       $city,
       $state,
-      $zip
+      $zip,
+      $bio,
       $major,
       $minor,
       $phone
@@ -57,6 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['updateBtn'])) {
     // update session display values
     $_SESSION['full_name'] = trim($first . ' ' . $last);
     $_SESSION['email'] = $email;
+    $_SESSION['bio'] = $bio;
 
     $_SESSION['notification_message'] = 'Profile updated successfully!';
 
@@ -122,6 +125,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['updateBtn'])) {
         <div class="mb-3">
           <label for="phone_number" class="form-label">Phone Number</label>
           <input type="text" class="form-control" name="phone_number" value="<?php echo htmlspecialchars($user['phone_number'] ?? ''); ?>">
+        </div>
+        <div class="mb-3">
+          <label for="bio" class="form-label">Bio</label>
+          <textarea class="form-control" name="bio" rows="4"><?php echo htmlspecialchars($user['bio'] ?? ''); ?></textarea>
         </div>
 
         <button type="submit" name="updateBtn" class="btn btn-primary w-100">Save Changes</button>

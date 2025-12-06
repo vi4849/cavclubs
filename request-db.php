@@ -192,12 +192,12 @@ function getUserByComputingID($computingID)
     return $result;
 }
 
-function updateUserProfile($computingID, $first, $last, $email, $year, $street, $city, $state, $zip, $major = null, $minor = null, $phone = null)
+function updateUserProfile($computingID, $first, $last, $email, $year, $street, $city, $state, $zip, $bio = '', $major = null, $minor = null, $phone = null)
 {
     global $db;
     $query = "UPDATE student
             SET first_name = :first, last_name = :last, email = :email, year = :year,
-                street_address = :street, city_address = :city, state_address = :state, zipcode_address = :zip
+                street_address = :street, city_address = :city, state_address = :state, zipcode_address = :zip, bio = :bio
             WHERE computing_ID = :computingID";
     $statement = $db->prepare($query);
     $statement->bindValue(':computingID', $computingID);
@@ -205,10 +205,11 @@ function updateUserProfile($computingID, $first, $last, $email, $year, $street, 
     $statement->bindValue(':last', $last);
     $statement->bindValue(':email', $email);
     $statement->bindValue(':year', $year);
-    $stmt->bindValue(':street', $street);
+    $statement->bindValue(':street', $street);
     $statement->bindValue(':city', $city);
     $statement->bindValue(':state', $state);
     $statement->bindValue(':zip', $zip);
+    $statement->bindValue(':bio', $bio);
     $statement->execute();
     $statement->closeCursor();
 
