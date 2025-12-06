@@ -1,5 +1,4 @@
 <?php
-session_start();
 require("connect-db.php");
 
 error_reporting(E_ALL);
@@ -119,7 +118,7 @@ function eventRsvpCounts($id, $db) {
 <body class="bg-light">
 <div class="container mt-5">
 
-    <h2 class="mb-3">Manage CIO Events</h2>
+    <h2 class="fw-bold">Manage CIO Events</h2>
     <p class="text-muted">You are an executive for:</p>
 
     <?php foreach($cios as $c): ?>
@@ -155,7 +154,6 @@ function eventRsvpCounts($id, $db) {
 
     <?php if(count($events) == 0): ?>
         <div class="alert alert-info">No events found.</div>
-        <a href="index.php?page=browse_events" class="btn btn-primary">Browse Events</a>
 
     <?php else: ?>
 

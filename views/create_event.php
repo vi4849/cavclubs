@@ -1,6 +1,7 @@
 <?php
 require("connect-db.php");
 require("request-db.php");
+$user_id = $_SESSION['username'];
 
 $message = '';
 
@@ -100,6 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['createEventBtn'])) {
                     ]);
 
                     $message = "Event created successfully.";
+                    unset($_POST);
                 } catch (PDOException $e) {
                     $message = "Failed to create event: " . htmlspecialchars($e->getMessage());
                 }
@@ -111,7 +113,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['createEventBtn'])) {
 
 // Fetch venues and CIOs for select inputs
 $venues = $db->query("SELECT venue_id, building_location, room_location FROM venue ORDER BY building_location ASC")->fetchAll(PDO::FETCH_ASSOC);
-$cios = $db->query("SELECT cio_id, cio_name FROM cio ORDER BY cio_name ASC")->fetchAll(PDO::FETCH_ASSOC);
+$stmt = $db->prepare("SELECT c.cio_id, c.cio_name FROM cio c JOIN cio_executive ce ON c.cio_id = ce.cio_id WHERE ce.computing_ID = :uid ORDER BY c.cio_name ASC");
+$stmt->execute([':uid' => $user_id]);
+$cios = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
 ?>
 
 <!DOCTYPE html>
@@ -155,7 +160,7 @@ $cios = $db->query("SELECT cio_id, cio_name FROM cio ORDER BY cio_name ASC")->fe
 
                     <div class="col-md-4">
                         <label class="form-label">Year</label>
-                        <input type="number" name="year_date" class="form-control" min="2024" value="<?php echo htmlspecialchars($_POST['year_date'] ?? ''); ?>" required>
+                        <input type="number" name="year_date" class="form-control" min="2025" value="<?php echo htmlspecialchars($_POST['year_date'] ?? ''); ?>" required>
                     </div>
 
                     <div class="col-md-6">
@@ -192,23 +197,18 @@ $cios = $db->query("SELECT cio_id, cio_name FROM cio ORDER BY cio_name ASC")->fe
 
                     <div class="col-12">
                         <label class="form-label">Creator Computing ID</label>
-                        <input type="text" name="computing_ID" class="form-control" placeholder="e.g., abc1yz" value="<?php echo htmlspecialchars($_POST['computing_ID'] ?? ''); ?>" required>
+                        <input type="text" name="computing_ID" class="form-control" value="<?php echo htmlspecialchars($_SESSION['username']); ?>" readonly>
                     </div>
 
                     <div class="col-12">
                         <div class="d-flex gap-2">
                             <button type="submit" name="createEventBtn" class="btn btn-dark">Create Event</button>
-                            <a href="index.php?page=home" class="btn btn-secondary">Cancel</a>
                         </div>
                     </div>
 
                 </div>
             </div>
         </form>
-
-        <div class="text-center mt-3">
-            <a href="index.php?page=browse_events" class="btn btn-outline-secondary">Browse Events</a>
-        </div>
 
     </div>
 

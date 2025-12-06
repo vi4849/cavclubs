@@ -1,5 +1,17 @@
-<?php require("connect-db.php"); ?>
-<?php include("base.php"); ?>
+<?php 
+require("connect-db.php"); 
+include("base.php"); 
+
+if (isset($_SESSION['notification_message'])) {
+    echo '<div class="alert alert-success alert-dismissible fade show" role="alert">
+            ' . $_SESSION['notification_message'] . '
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>';
+
+    unset($_SESSION['notification_message']);
+}
+?>
+
 <!DOCTYPE html>
 <html>
 
@@ -42,7 +54,7 @@
                         <ul>
                             <li>Club A (placeholder)</li>
                             <li>Club B (placeholder)</li>
-                        </ul>
+                        </ul> -->
                     </div>
                 </div>
             </div>

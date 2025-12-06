@@ -15,10 +15,10 @@
           <!-- Navbar links: updated to point at view pages routed via index.php?page=... -->
           <div class="collapse navbar-collapse" id="collapsibleNavbar">
             <ul class="navbar-nav ms-auto flex-wrap">
-              <li class="nav-item">
-                <a class="nav-link" href="index.php?page=about">About</a>
-              </li>
               <?php if (isset($_SESSION['user_type'])) { ?>
+                <li class="nav-item">
+                  <a class="nav-link" href="index.php?page=home">Home</a>
+                </li>
                 <li class="nav-item">
                   <a class="nav-link" href="index.php?page=browse_events">Browse Events</a>
                 </li>
