@@ -48,6 +48,37 @@ if (isset($_SESSION['notification_message'])) {
                             echo !empty($addressParts) ? implode(", ", $addressParts) : "Address not provided.";
                             ?>
                         </p>
+
+                        <!-- Major/Minor -->
+                        <p><strong>Major(s):</strong>
+                            <?php
+                            if (!empty($_SESSION['majors'])) {
+                                echo htmlspecialchars(implode(", ", $_SESSION['majors']));
+                            } else {
+                                echo "No majors added.";
+                            }
+                            ?>
+                        </p>
+                        <p><strong>Minor(s):</strong>
+                            <?php
+                            if (!empty($_SESSION['minors'])) {
+                                echo htmlspecialchars(implode(", ", $_SESSION['minors']));
+                            } else {
+                                echo "No minors added.";
+                            }
+                            ?>
+                        </p>
+
+                        <!-- Phone Number -->
+                        <p><strong>Phone number(s):</strong>
+                            <?php
+                            if (!empty($_SESSION['phone_numbers'])) {
+                                echo htmlspecialchars(implode(", ", $_SESSION['phone_numbers']));
+                            } else {
+                                echo "No phone numbers added.";
+                            }
+                            ?>
+                        </p>
                         
                         <p><strong>Bio:</strong><br><?php echo isset($_SESSION['bio']) ? nl2br(htmlspecialchars($_SESSION['bio'])) : 'This user has not added a bio yet.'; ?></p>
                         <p><strong>Clubs joined:</strong></p>
