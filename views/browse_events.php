@@ -2,6 +2,17 @@
 require("connect-db.php");
 require("request-db.php");
 
+// helper to display times in 12-hour format with AM/PM
+function format_time_for_display($timeStr) {
+    if (empty($timeStr)) return '';
+    // try to parse common formats
+    $ts = strtotime($timeStr);
+    if ($ts === false) {
+        return htmlspecialchars($timeStr);
+    }
+    return date('g:i A', $ts);
+}
+
 $eventsPerPage = 12;
 $page = isset($_GET['p']) ? max(1, intval($_GET['p'])) : 1;
 $offset = ($page - 1) * $eventsPerPage;
@@ -164,8 +175,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_event_id'])) {
                                     </p>
                                     <p class="mb-1">
                                         <i class="bi bi-clock"></i>
-                                        <?php echo htmlspecialchars($event['start_time']); ?>
-                                        – <?php echo htmlspecialchars($event['end_time']); ?>
+                                            <?php echo htmlspecialchars(format_time_for_display($event['start_time'])); ?>
+                                            – <?php echo htmlspecialchars(format_time_for_display($event['end_time'])); ?>
                                     </p>
                                     <p class="mb-3">
                                         <i class="bi bi-geo-alt"></i>

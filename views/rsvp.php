@@ -79,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rsvp_submit'])) {
 
                             <div class="d-flex gap-2">
                                 <button type="submit" name="rsvp_submit" class="btn btn-dark">Save RSVP</button>
-                                <a href="index.php?page=browse_events" class="btn btn-secondary">Back</a>
+                                <a href="index.php?page=rsvp_history" class="btn btn-secondary">Back</a>
                                 <a href="index.php?page=rsvp_history" class="btn btn-outline-secondary ms-auto">My RSVPs</a>
                             </div>
                         </form>
