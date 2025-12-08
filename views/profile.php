@@ -1,6 +1,8 @@
 <?php 
 require("connect-db.php"); 
+require("request-db.php");
 include("base.php"); 
+
 
 if (isset($_SESSION['notification_message'])) {
     echo '<div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -10,6 +12,20 @@ if (isset($_SESSION['notification_message'])) {
 
     unset($_SESSION['notification_message']);
 }
+
+$user = getUserByComputingID($_SESSION['username']);
+$user_phonenumbers = fetchMultiAttributeByComputingID($_SESSION['username'], 'student_phone', 'phone_number');
+if (!is_array($user_phonenumbers))
+  $user_phonenumbers = [$user_phonenumbers];
+
+$user_majors = fetchMultiAttributeByComputingID($_SESSION['username'], 'student_major', 'major_name');
+if (!is_array($user_majors))
+  $user_majors = [$user_majors];
+
+$user_minors = fetchMultiAttributeByComputingID($_SESSION['username'], 'student_minor', 'minor_name');
+if (!is_array($user_minors))
+  $user_minors = [$user_minors];
+
 ?>
 
 <!DOCTYPE html>
@@ -36,56 +52,30 @@ if (isset($_SESSION['notification_message'])) {
                         </div>
                         <hr>
                         <p><strong>Email:</strong> <?php echo isset($_SESSION['email']) ? htmlspecialchars($_SESSION['email']) : 'email@example.com'; ?></p>
-                        
-                        <!-- Full Address -->
-                        <p><strong>Address:</strong><br>
-                            <?php 
-                            $addressParts = [];
-                            if (!empty($_SESSION['street_address'])) $addressParts[] = htmlspecialchars($_SESSION['street_address']);
-                            if (!empty($_SESSION['city_address'])) $addressParts[] = htmlspecialchars($_SESSION['city_address']);
-                            if (!empty($_SESSION['state_address'])) $addressParts[] = htmlspecialchars($_SESSION['state_address']);
-                            if (!empty($_SESSION['zipcode_address'])) $addressParts[] = htmlspecialchars($_SESSION['zipcode_address']);
-                            echo !empty($addressParts) ? implode(", ", $addressParts) : "Address not provided.";
+                        <p><strong>Year:</strong> <?php echo isset($user['year']) ? htmlspecialchars($user['year']) : ''; ?></p>          
+                        <p><strong>Date of Birth:</strong> <?php echo htmlspecialchars(date("m/d/Y", strtotime($user['DOB']))); ?></p>   
+                        <p><strong>Address:</strong> <?php  echo htmlspecialchars($user['street_address']) . ', ' . htmlspecialchars($user['city_address']) . ', ' . htmlspecialchars($user['state_address']) . ' ' . htmlspecialchars($user['zipcode_address']);  ?></p>        
+                        <p><strong>Phone Number(s):</strong>
+                            <?php
+                                if (!empty($user_phonenumbers)) {
+                                    echo htmlspecialchars(implode(', ', $user_phonenumbers));
+                                }
                             ?>
-                        </p>
-
-                        <!-- Major/Minor -->
+                        </p>    
                         <p><strong>Major(s):</strong>
                             <?php
-                            if (!empty($_SESSION['majors'])) {
-                                echo htmlspecialchars(implode(", ", $_SESSION['majors']));
-                            } else {
-                                echo "No majors added.";
-                            }
+                                if (!empty($user_majors)) {
+                                    echo htmlspecialchars(implode(', ', $user_majors));
+                                } 
                             ?>
-                        </p>
+                        </p>   
                         <p><strong>Minor(s):</strong>
                             <?php
-                            if (!empty($_SESSION['minors'])) {
-                                echo htmlspecialchars(implode(", ", $_SESSION['minors']));
-                            } else {
-                                echo "No minors added.";
-                            }
+                                if (!empty($user_minors)) {
+                                    echo htmlspecialchars(implode(', ', $user_minors));
+                                } 
                             ?>
-                        </p>
-
-                        <!-- Phone Number -->
-                        <p><strong>Phone number(s):</strong>
-                            <?php
-                            if (!empty($_SESSION['phone_numbers'])) {
-                                echo htmlspecialchars(implode(", ", $_SESSION['phone_numbers']));
-                            } else {
-                                echo "No phone numbers added.";
-                            }
-                            ?>
-                        </p>
-                        
-                        <p><strong>Bio:</strong><br><?php echo isset($_SESSION['bio']) ? nl2br(htmlspecialchars($_SESSION['bio'])) : 'This user has not added a bio yet.'; ?></p>
-                        <p><strong>Clubs joined:</strong></p>
-                        <ul>
-                            <li>Club A (placeholder)</li>
-                            <li>Club B (placeholder)</li>
-                        </ul>
+                        </p>              
                     </div>
                 </div>
             </div>

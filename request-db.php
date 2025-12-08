@@ -192,12 +192,25 @@ function getUserByComputingID($computingID)
     return $result;
 }
 
-function updateUserProfile($computingID, $first, $last, $email, $year, $street, $city, $state, $zip, $bio = '', $major = null, $minor = null, $phone = null)
+function fetchMultiAttributeByComputingID($computingID, $tableName, $columnName)
+{
+    global $db;
+    $query = "SELECT $columnName FROM $tableName WHERE computing_ID = :computingID";
+    $statement = $db->prepare($query);
+    $statement->bindValue(':computingID', $computingID);
+    $statement->execute();
+    $result = $statement->fetchAll(PDO::FETCH_COLUMN);
+    $statement->closeCursor();
+    return $result;
+}
+
+
+function updateUserProfile($computingID, $first, $last, $email, $year, $street, $city, $state, $zip)
 {
     global $db;
     $query = "UPDATE student
-            SET first_name = :first, last_name = :last, email = :email, year = :year,
-                street_address = :street, city_address = :city, state_address = :state, zipcode_address = :zip, bio = :bio
+            SET first_name = :first, last_name = :last, email = :email, year = :year, street_address = :street,
+                city_address = :city, state_address = :state, zipcode_address = :zip
             WHERE computing_ID = :computingID";
     $statement = $db->prepare($query);
     $statement->bindValue(':computingID', $computingID);
@@ -209,43 +222,24 @@ function updateUserProfile($computingID, $first, $last, $email, $year, $street, 
     $statement->bindValue(':city', $city);
     $statement->bindValue(':state', $state);
     $statement->bindValue(':zip', $zip);
-    $statement->bindValue(':bio', $bio);
     $statement->execute();
     $statement->closeCursor();
-
-    // Optional: Update major
-    if ($major !== null) {
-        // Delete existing majors, then insert new one
-        $db->prepare("DELETE FROM student_major WHERE computing_ID = :computingID")
-           ->execute([':computingID' => $computingID]);
-        if (!empty($major)) {
-            insertMultiple('student_major', $computingID, 'major_name', is_array($major) ? $major : [$major]);
-        }
-    }
-
-    // Optional: Update minor
-    if ($minor !== null) {
-        $db->prepare("DELETE FROM student_minor WHERE computing_ID = :computingID")
-           ->execute([':computingID' => $computingID]);
-        if (!empty($minor)) {
-            insertMultiple('student_minor', $computingID, 'minor_name', is_array($minor) ? $minor : [$minor]);
-        }
-    }
-
-    // Optional: Update phone number(s)
-    if ($phone !== null) {
-        $db->prepare("DELETE FROM student_phone WHERE computing_ID = :computingID")
-           ->execute([':computingID' => $computingID]);
-        if (!empty($phone)) {
-            insertMultiple('student_phone', $computingID, 'phone_number', is_array($phone) ? $phone : [$phone]);
-        }
-    }
 }
 
 function deleteUser($computingID)
 {
     global $db;
     $query = "DELETE FROM student WHERE computing_ID = :computingID";
+    $statement = $db->prepare($query);
+    $statement->bindValue(':computingID', $computingID);
+    $statement->execute();
+    $statement->closeCursor();
+}
+
+function deleteMultiAttributes($computingID, $tableName)
+{
+    global $db;
+    $query = "DELETE FROM $tableName WHERE computing_ID = :computingID";
     $statement = $db->prepare($query);
     $statement->bindValue(':computingID', $computingID);
     $statement->execute();
