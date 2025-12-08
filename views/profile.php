@@ -14,8 +14,17 @@ if (isset($_SESSION['notification_message'])) {
 }
 
 $user = getUserByComputingID($_SESSION['username']);
-$user_phonenumbers = getPhoneNumbersByComputingID($_SESSION['username']);
-// var_dump($user_phonenumbers);
+$user_phonenumbers = fetchMultiAttributeByComputingID($_SESSION['username'], 'student_phone', 'phone_number');
+if (!is_array($user_phonenumbers))
+  $user_phonenumbers = [$user_phonenumbers];
+
+$user_majors = fetchMultiAttributeByComputingID($_SESSION['username'], 'student_major', 'major_name');
+if (!is_array($user_majors))
+  $user_majors = [$user_majors];
+
+$user_minors = fetchMultiAttributeByComputingID($_SESSION['username'], 'student_minor', 'minor_name');
+if (!is_array($user_minors))
+  $user_minors = [$user_minors];
 
 ?>
 
@@ -46,16 +55,27 @@ $user_phonenumbers = getPhoneNumbersByComputingID($_SESSION['username']);
                         <p><strong>Year:</strong> <?php echo isset($user['year']) ? htmlspecialchars($user['year']) : ''; ?></p>          
                         <p><strong>Date of Birth:</strong> <?php echo htmlspecialchars(date("m/d/Y", strtotime($user['DOB']))); ?></p>   
                         <p><strong>Address:</strong> <?php  echo htmlspecialchars($user['street_address']) . ', ' . htmlspecialchars($user['city_address']) . ', ' . htmlspecialchars($user['state_address']) . ' ' . htmlspecialchars($user['zipcode_address']);  ?></p>        
-                        <p><strong>Phone Numbers:</strong>
+                        <p><strong>Phone Number(s):</strong>
                             <?php
                                 if (!empty($user_phonenumbers)) {
-                                    $user_phonenumbers = [$user_phonenumbers];
                                     echo htmlspecialchars(implode(', ', $user_phonenumbers));
-                                } else {
-                                    echo '';
                                 }
                             ?>
-                        </p>               
+                        </p>    
+                        <p><strong>Major(s):</strong>
+                            <?php
+                                if (!empty($user_majors)) {
+                                    echo htmlspecialchars(implode(', ', $user_majors));
+                                } 
+                            ?>
+                        </p>   
+                        <p><strong>Minor(s):</strong>
+                            <?php
+                                if (!empty($user_minors)) {
+                                    echo htmlspecialchars(implode(', ', $user_minors));
+                                } 
+                            ?>
+                        </p>              
                     </div>
                 </div>
             </div>

@@ -192,14 +192,14 @@ function getUserByComputingID($computingID)
     return $result;
 }
 
-function getPhoneNumbersByComputingID($computingID)
+function fetchMultiAttributeByComputingID($computingID, $tableName, $columnName)
 {
     global $db;
-    $query = "SELECT * FROM student_phone WHERE computing_ID = :computingID";
+    $query = "SELECT $columnName FROM $tableName WHERE computing_ID = :computingID";
     $statement = $db->prepare($query);
     $statement->bindValue(':computingID', $computingID);
     $statement->execute();
-    $result = $statement->fetch(PDO::FETCH_COLUMN);
+    $result = $statement->fetchAll(PDO::FETCH_COLUMN);
     $statement->closeCursor();
     return $result;
 }
@@ -230,6 +230,16 @@ function deleteUser($computingID)
 {
     global $db;
     $query = "DELETE FROM student WHERE computing_ID = :computingID";
+    $statement = $db->prepare($query);
+    $statement->bindValue(':computingID', $computingID);
+    $statement->execute();
+    $statement->closeCursor();
+}
+
+function deleteMultiAttributes($computingID, $tableName)
+{
+    global $db;
+    $query = "DELETE FROM $tableName WHERE computing_ID = :computingID";
     $statement = $db->prepare($query);
     $statement->bindValue(':computingID', $computingID);
     $statement->execute();
